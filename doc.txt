@@ -1,0 +1,67 @@
+Généralités :
+	• L'authentification, non segmentée, protège de l'édition. Elle interdit aussi l'indexation/listing de certains dossier sur le frontend, mais ne doit dans aucun cas être considéré comme une protection de documents privés, qui restent accessiblent pour qui s'en donne les moyens. Ça n'empêche que vous pouvez lui coller un procès au cul si ça vous chante (selon une jurisprudence récente à la con).
+
+Frontend Tips :
+	• Éditer le titre d'un alias ne change pas la description de l'élément originel
+	• Les alias affichés sur le frontend ne sont pas update après renommage de l'item original
+	• Bouton "Éditer" : si actif, la description s'édite en double-cliquant dessus; si inactif, le menu doit être utilisé
+	• New link : paste "http://... description" -> automatically split and set the description field
+	                              ⬇︎
+	                             blank
+
+Behaviors :
+	• When an item is moved, all tags associated with folders which will no longer contain the item are cleared
+	• La session PHP est créée (et le cookie déposé) uniquement lors de la soumission du formulaire de auth.php
+
+Todo :
+	• URL rewrite for index.php?path=... ($_CONF['urlrewrite'])
+	• Tag system
+	• Load aliased folder -> open at orig location if reachable through the same page + move focus ; open in new tab if not
+	• if (data[i]['type'] == 'error') -> error item, with error message as description
+	• Youtube DL
+	• Web save
+	• Web : die("item ".$_ID." requires manual removing")
+	• Cleaner frontend item position move
+
+Structure of the JSON file :
+	- 'parent' : parent folder ID (`false` for root item)
+	- 'refby' : array of item ID that reference this item
+	- 'type' : type of the item : folder, yt, web, doc, hr, alias
+	- 'public' : `true` if item is visible without auth (default), `false` if not
+	- 'tags' : array of tag names
+	- 'item' : type-specific field :
+		• folder :
+			- 'name', 'descr'
+			- 'children' : array of children items ID
+		• yt :
+			- 'name', 'descr'
+			- 'url' : youtube url
+		• web :
+			- 'name', 'descr'
+			- 'saved' : `true` if the website is saved (as a directory [name].save/), `false` if not
+			- 'url' : url of the ressource
+		• doc :
+			- 'name', 'descr'
+			- 'ext' : extention of the file
+			- 'url' : url of the document if specified, `null` if not
+		• hr :
+			[empty]
+		• alias :
+			- 'orig' : ID of the original item (must be a non-nameless item)
+			- 'descr' : if null, the 'descr' field of the original item is used
+		• txt :
+			- 'descr' : the text note
+		('name' field is the short name for the item (lowercase, no spaces or special chars, no underscore, hyphens, some accentuated characters), unique inside a specified folder, and used as filename in the file tree, if applicable)
+		('descr' field is the full title of the item, as displayed on the interface, if applicable)
+Additional fields sent to frontend :
+	- fields in the 'item' array merged with other fields
+	• web, doc :
+		- 'localurl' : relative url of the saved document/website
+	• alias :
+		- 'origdata' : data that would be sent to frontend for the original item
+
+Tags :
+	- tags.json -> array de { name, color, text-color, bold }
+	- Bouton de gestion des tags : liste de tous les tags avec color-pickers, bold checkbox, del-button (ne supprime pas le tag des items), et lien vers page qui liste tous les items marqués par ce tag (page normale en mode "tout dérouler" qui <del>n'affiche</del> _transfert_ (pour une futur fonction de search) que les items correspondants dans les dossiers)
+	- Popup de gestion de tag pour chaque item : un menu déroulant (focus auto) pour tapper le nom du tag (+ catch Enter key), et en plus une liste de tous les tags avec checkbox
+	- Tag pas dans la liste : affichage en italique

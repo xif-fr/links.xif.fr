@@ -1,0 +1,243 @@
+
+/*********************************** BODY/HEADER ***********************************/
+
+body {
+	font-family: Menlo, Monaco, monospace;
+	background-color: #EEE;
+	margin: 0px;
+}
+#comments {
+	font-size: 13px;
+	margin: 100px 100px;
+}
+header {
+	height: 30px;
+	background-color: #444;
+	border-bottom: 2px solid #888;
+}
+header #path {
+	font-size: 12px;
+	font-weight: bold;
+	color: #AAA;
+	position: absolute;
+	top: 3px;
+	left: 7px;
+}
+header #path a {
+	color: #FFF;
+	font-weight: normal;
+	text-decoration: none;
+}
+header #path a:hover {
+	text-decoration: underline;
+}
+header #homebutton {
+	height: 16px;
+	width: 16px;
+	background-image: url(/rsrc/home.png);
+	display: inline-block;
+	position: relative;
+	top: 3px;
+}
+header > #header-right {
+	display: inline-block;
+	position: absolute;
+	top: 4px;
+	right: 4px;
+}
+header > #header-right > #recload {
+}
+header > #header-right > span.option {
+	display: inline-block;
+	color: #DDD;
+	font-family: "Lucida Grande", "Lucida Sans", "Lucida", "Verdana", sans-serif;
+	font-size: 11px;
+}
+header #authbutton {
+	float: right;
+	margin: 2px 4px 2px 4px;
+}
+header #authbutton > a {
+	height: 18px;
+	width: 18px;
+	display: inline-block;
+	background-image: url(/rsrc/auth.png);
+}
+header #main-tag-button {
+	float: right;
+	width: 32px;
+	margin-left: 3px;
+	margin-right: 4px;
+	height: 21px;
+}
+_:-moz-tree-row(hover), header #main-tag-button {
+	padding-top: 1px;
+	margin-top: 1px;
+	height: 22px;
+}
+header #main-tag-button > img {
+	margin-left: -6px;
+	margin-right: -6px;
+}
+.root {
+	margin: 35px;
+}
+.root button {
+	cursor: pointer;
+}
+ul {
+	list-style-type: none;
+	padding-left: 25px;
+}
+.root progress {
+	width: 50%;
+	margin-left: 25%;
+	margin-right: 25%;
+}
+
+/*********************************** ITEMS ***********************************/
+
+li.item {
+	line-height: 16px;
+	font-size: 0px;
+}
+li.item > p.descr {
+	max-width: 90%;
+	margin: 0px;
+	display: inline-block;
+	font-size: 13px;
+	vertical-align: middle;
+	padding-top: 4px;
+	margin: 0px 9px;
+}
+li.item > .icon,
+li.item > a.save,
+li.item > img.dling,
+li.item > a.folder-anchor,
+li.item > button.delete,
+li.item > button.new-item,
+li.item > span.lock,
+li.item > select {
+	display: inline-block;
+	border: none;
+	background-color: transparent;
+	margin: 0px;
+	padding: 0px;
+	height: 16px;
+	width: 16px;
+	vertical-align: middle;
+}
+li.item-yt > .icon { background-image: url(/rsrc/yt.png); }
+li.item-doc > .icon { background-image: url(/rsrc/doc.png); }
+li.item-doc.item-pdf > .icon { background-image: url(/rsrc/pdf.png); }
+li.item-doc.item-img > .icon { background-image: url(/rsrc/img.png); }
+li.item-doc.item-ebook > .icon { background-image: url(/rsrc/djvu.png); }
+li.item-doc.item-archive > .icon { background-image: url(/rsrc/archive.png); }
+li.item-web > .icon { background-image: url(/rsrc/web.png); }
+li.item-web.item-wiki > .icon { background-image: url(/rsrc/wikipedia.png); }
+li.item-txt > .icon { background-image: url(/rsrc/txt.png); }
+li.item > span.lock { background-image: url(/rsrc/locked.png); }
+li.item-hr { height: 16px; }
+li.item-hr > hr { width: 40%; display: inline-block; position: relative; bottom: 6px; }
+li.item-hr > span { display: inline-block; height: 16px; }
+li.item > a.save { background-image: url(/rsrc/saved-version.png); margin-right: 8px; }
+li.item-folder > .icon { background-image: url(/rsrc/folder.png); }
+li.item-folder > p.descr { font-weight: bold; }
+li.item-folder > a.folder-anchor { background-image: url(/rsrc/anchor.png); display: none; }
+li.item > select {
+	display: none;
+	border-radius: unset;
+	-webkit-appearance: none;
+	   -moz-appearance: none;
+	        appearance: none;
+	background-image: url(/rsrc/wrench.gif);
+	position: relative;
+	top: 1px;
+}
+li.item:hover > a.folder-anchor,
+li.item:hover > select,
+li.item:hover > span.folder-name {
+	display: inline-block;
+}
+li.item > a.orig {
+	color: #44D;
+	font-size: 10px;
+	display: none;
+	position: relative;
+	top: 2px;
+	margin-right: 5px;
+}
+body[showlinks=true] li.item:hover > a.orig {
+	display: inline-block;
+}
+li.item-folder > span.folder-name {
+	display: none;
+	font-size: 10px;
+	font-style: italic;
+	position: relative;
+	top: 2px;
+	margin-left: 5px;
+	margin-right: 5px;
+}
+li.item > .alias {
+	margin-left: -9px;
+	position: relative;
+	top: 8px;
+	left: 3px;
+}
+
+/*********************************** ADD FORM ***********************************/
+
+#add-form, #auth-form {
+	font-family: "Lucida Grande", "Lucida Sans", "Lucida", "Verdana", sans-serif;
+	font-size: 12px;
+	position: fixed;
+	top: 40%;
+	left: 20%;
+	width: 60%;
+	background-color: #FAFAFA;
+	border: 1px solid #666;
+	padding: 20px;
+	box-shadow: 5px 5px 8px #777;
+}
+#add-form #add-type-choice {
+	float: left;
+	margin-right: 30px;
+	padding-right: 20px;
+	border-right: 1px dashed #888;
+}
+#add-form > fieldset {
+	border: none;
+	padding: 0px;
+	margin: 0px;
+}
+#add-form > .buttons, #auth-form > .buttons {
+	margin-top: 10px;
+	float: right;
+}
+.inputline > span {
+	display: table-row;
+}
+.inputline > span > span {
+	display: table-cell;
+	white-space: nowrap;
+}
+.inputline > span > span:nth-child(2) {
+	width: 100%;
+	padding: 0px 14px 0px 8px;
+}
+.inputline > span > span:nth-child(2) > input {
+	width: 100%;
+}
+.inputline input.display-field {
+	border: none;
+	background: none;
+}
+span.spacer {
+	display: inline-block;
+	width: 4px;
+}
+progress#add-progress {
+	margin-top: 16px;
+	width: 20%;
+}
