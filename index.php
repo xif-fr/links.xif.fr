@@ -3,6 +3,11 @@
 include_once "conf.php";
 include_once "core.php";
 
+if (!is_writable($_CONF['metadata-path'])) 
+	die("metadata folder not writable");
+if (!is_writable($_CONF['files-path']))
+	die("files folder not writable");
+
 if (isset($_GET['id'])) {
 	if (preg_match("/^".$_CONF['idregexp']."$/", $_GET['id']) === 0) 
 		die("invalid folder id");
@@ -37,7 +42,7 @@ unset($jsonauth);
 	<head lang="fr">
 		<meta charset="utf-8">
 		<title><?=htmlspecialchars($_TITLE)?></title>
-		<link rel="stylesheet" href="/main.css" type="text/css">
+		<link rel="stylesheet" href="main.css" type="text/css">
 		<script type="text/javascript" src="https://code.jquery.com/jquery-git.min.js" crossorigin="anonymous"></script>
 	</head>
 	<body>
@@ -52,7 +57,7 @@ unset($jsonauth);
 					foreach ($comps as $name) {
 						if ($name == "") continue;
 						$path = $path.$name."/";
-						?> &gt; <a href="/?path=<?=$path?>"><?=$name?></a> <?php
+						?> &gt; <a href="?path=<?=$path?>"><?=$name?></a> <?php
 					}
 				?>
 			</span>
@@ -94,7 +99,7 @@ unset($jsonauth);
 				<?php if (!$_PUBLICEDIT && !$_AUTHED) {
 					?> <span id="authbutton"><a href="auth.php?id=<?=$_ID?>"></a></span> <?php
 				} else {
-					?> <button id="main-tag-button"><img src="/rsrc/tag.png"/></button> <?php
+					?> <button id="main-tag-button"><img src="rsrc/tag.png"/></button> <?php
 				}
 				?>
 			</div>
@@ -130,7 +135,7 @@ unset($jsonauth);
 		<ul hidden>
 			<li class="item item-folder" id="tpl-folder">
 				<button class="icon"></button>
-				<img class="alias" src="/rsrc/alias.png"/>
+				<img class="alias" src="rsrc/alias.png"/>
 				<p class="descr"> </p>
 				<span class="lock"></span>
 				<a class="folder-anchor" href=""></a>
@@ -138,14 +143,14 @@ unset($jsonauth);
 			</li>
 			<li class="item item-doc" id="tpl-doc">
 				<a class="icon" href="" target="_blank"></a>
-				<img class="alias" src="/rsrc/alias.png"/>
+				<img class="alias" src="rsrc/alias.png"/>
 				<p class="descr"> </p>
 				<span class="lock"></span>
 				<a class="orig" href="" target="_blank"></a>
 			</li>
 			<li class="item item-web" id="tpl-web">
 				<a class="icon" href="" target="_blank"></a>
-				<img class="alias" src="/rsrc/alias.png"/>
+				<img class="alias" src="rsrc/alias.png"/>
 				<p class="descr"> </p>
 				<span class="lock"></span>
 				<a class="save" href=""></a>
@@ -153,14 +158,14 @@ unset($jsonauth);
 			</li>
 			<li class="item item-yt" id="tpl-yt">
 				<a class="icon" href="" target="_blank"></a>
-				<img class="alias" src="/rsrc/alias.png"/>
+				<img class="alias" src="rsrc/alias.png"/>
 				<p class="descr"> </p>
 				<span class="lock"></span>
 				<a class="save" href=""></a>
 			</li>
 			<li class="item item-txt" id="tpl-txt">
 				<span class="icon"></span>
-				<img class="alias" src="/rsrc/alias.png"/>
+				<img class="alias" src="rsrc/alias.png"/>
 				<p class="descr"> </p>
 				<span class="lock"></span>
 			</li>

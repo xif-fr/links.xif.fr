@@ -34,7 +34,7 @@ header #path a:hover {
 header #homebutton {
 	height: 16px;
 	width: 16px;
-	background-image: url(/rsrc/home.png);
+	background-image: url(rsrc/home.png);
 	display: inline-block;
 	position: relative;
 	top: 3px;
@@ -61,7 +61,7 @@ header #authbutton > a {
 	height: 18px;
 	width: 18px;
 	display: inline-block;
-	background-image: url(/rsrc/auth.png);
+	background-image: url(rsrc/auth.png);
 }
 header #main-tag-button {
 	float: right;
@@ -127,30 +127,30 @@ li.item > select {
 	width: 16px;
 	vertical-align: middle;
 }
-li.item-yt > .icon { background-image: url(/rsrc/yt.png); }
-li.item-doc > .icon { background-image: url(/rsrc/doc.png); }
-li.item-doc.item-pdf > .icon { background-image: url(/rsrc/pdf.png); }
-li.item-doc.item-img > .icon { background-image: url(/rsrc/img.png); }
-li.item-doc.item-ebook > .icon { background-image: url(/rsrc/djvu.png); }
-li.item-doc.item-archive > .icon { background-image: url(/rsrc/archive.png); }
-li.item-web > .icon { background-image: url(/rsrc/web.png); }
-li.item-web.item-wiki > .icon { background-image: url(/rsrc/wikipedia.png); }
-li.item-txt > .icon { background-image: url(/rsrc/txt.png); }
-li.item > span.lock { background-image: url(/rsrc/locked.png); }
+li.item-yt > .icon { background-image: url(rsrc/yt.png); }
+li.item-doc > .icon { background-image: url(rsrc/doc.png); }
+li.item-doc.item-pdf > .icon { background-image: url(rsrc/pdf.png); }
+li.item-doc.item-img > .icon { background-image: url(rsrc/img.png); }
+li.item-doc.item-ebook > .icon { background-image: url(rsrc/djvu.png); }
+li.item-doc.item-archive > .icon { background-image: url(rsrc/archive.png); }
+li.item-web > .icon { background-image: url(rsrc/web.png); }
+li.item-web.item-wiki > .icon { background-image: url(rsrc/wikipedia.png); }
+li.item-txt > .icon { background-image: url(rsrc/txt.png); }
+li.item > span.lock { background-image: url(rsrc/locked.png); }
 li.item-hr { height: 16px; }
 li.item-hr > hr { width: 40%; display: inline-block; position: relative; bottom: 6px; }
 li.item-hr > span { display: inline-block; height: 16px; }
-li.item > a.save { background-image: url(/rsrc/saved-version.png); margin-right: 8px; }
-li.item-folder > .icon { background-image: url(/rsrc/folder.png); }
+li.item > a.save { background-image: url(rsrc/saved-version.png); margin-right: 8px; }
+li.item-folder > .icon { background-image: url(rsrc/folder.png); }
 li.item-folder > p.descr { font-weight: bold; }
-li.item-folder > a.folder-anchor { background-image: url(/rsrc/anchor.png); display: none; }
+li.item-folder > a.folder-anchor { background-image: url(rsrc/anchor.png); display: none; }
 li.item > select {
 	display: none;
 	border-radius: unset;
 	-webkit-appearance: none;
 	   -moz-appearance: none;
 	        appearance: none;
-	background-image: url(/rsrc/wrench.gif);
+	background-image: url(rsrc/wrench.gif);
 	position: relative;
 	top: 1px;
 }

@@ -25,7 +25,7 @@ if (isset($_POST['passphrase'])) {
 	
 	if (!isset($path)) 
 		$path = "/";
-	header("Location: /?path=".$path, true, 303);
+	header("Location: index.php?path=".$path, true, 303);
 	exit();
 }
 
@@ -34,14 +34,14 @@ if (isset($_POST['passphrase'])) {
 	<head lang="fr">
 		<meta charset="utf-8">
 		<title>Authentification</title>
-		<link rel="stylesheet" href="/main.css" type="text/css">
+		<link rel="stylesheet" href="main.css" type="text/css">
 	</head>
 	<body>
 		<header>
 			<?php if (isset($path)) { ?>
 			<span id="path">
-				<a id="homebutton" href="/"></a>
-				<a href="/?path=<?=$path?>"><?=$path?></a>
+				<a id="homebutton" href="index.php"></a>
+				<a href="index.php?path=<?=$path?>"><?=$path?></a>
 			</span>
 			<?php } ?>
 		</header>
