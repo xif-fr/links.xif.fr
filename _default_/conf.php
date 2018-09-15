@@ -21,3 +21,4 @@ $_CONF['authfilepath'] = "[somewhere private]/auth.json";
 $_CONF['files-path'] = "files";
 $_CONF['titlebase'] = "My super link repository !";
 $_CONF['urlrewrite'] = false;
+$_CONF['private-repository'] = false;

@@ -14,6 +14,10 @@ $jsonauth = json_decode(file_get_contents($_CONF['authfilepath']), true);
 $_PUBLICEDIT = $jsonauth['public-edit'];
 unset($jsonauth);
 
+if ($_CONF['private-repository'])
+	if (!$_AUTHED)
+		header("Location: auth.php");
+
 $regexp_url = "/^https?:\/\//";
 $regexp_name = "/^".$_CONF['nameregexp']."$/u";
 $regexp_md5id = "/^".$_CONF['idregexp']."$/";

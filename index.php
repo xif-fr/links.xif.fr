@@ -32,10 +32,15 @@ if (isset($_COOKIE[session_name()])) {
 	if (!isset($_SESSION['authed'])) 
 		$_SESSION['authed'] = false;
 }
+
 $_AUTHED = (isset($_SESSION) && $_SESSION['authed'] == true);
 $jsonauth = json_decode(file_get_contents($_CONF['authfilepath']), true);
 $_PUBLICEDIT = $jsonauth['public-edit'];
 unset($jsonauth);
+
+if ($_CONF['private-repository'])
+	if (!$_AUTHED)
+		header("Location: auth.php");
 
 ?><!DOCTYPE html>
 <html>
@@ -50,7 +55,7 @@ unset($jsonauth);
 		<header>
 			<?php if (isset($_GET['path'])) { ?>
 			<span id="path">
-				<a id="homebutton" href="/"></a>
+				<a id="homebutton" href="index.php"></a>
 				<?php
 					$comps = explode("/", $_GET['path']);
 					$path = "/";
