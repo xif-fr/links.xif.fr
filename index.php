@@ -4,9 +4,9 @@ include_once "conf.php";
 include_once "core.php";
 
 if (!is_writable($_CONF['metadata-path'])) 
-	die("metadata folder not writable");
+	die("metadata folder is not writable");
 if (!is_writable($_CONF['files-path']))
-	die("files folder not writable");
+	die("files folder is not writable");
 
 if (isset($_GET['id'])) {
 	if (preg_match("/^".$_CONF['idregexp']."$/", $_GET['id']) === 0) 
@@ -435,7 +435,7 @@ unset($jsonauth);
 				switch (item['type']) {
 					case 'folder':
 						$(li).find("a.folder-anchor")
-							.attr('href', "/?path="+item['path']);
+							.attr('href', "?path="+item['path']);
 						$(li).find("span.folder-name")
 							.text( item['name'] );
 						$(li).prop('opened', false);
