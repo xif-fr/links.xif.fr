@@ -133,6 +133,8 @@ li.item-doc.item-pdf > .icon { background-image: url(rsrc/pdf.png); }
 li.item-doc.item-img > .icon { background-image: url(rsrc/img.png); }
 li.item-doc.item-ebook > .icon { background-image: url(rsrc/djvu.png); }
 li.item-doc.item-archive > .icon { background-image: url(rsrc/archive.png); }
+li.item-doc.item-audio > .icon { background-image: url(rsrc/audio.png); }
+li.item-doc.item-video > .icon { background-image: url(rsrc/video.png); }
 li.item-web > .icon { background-image: url(rsrc/web.png); }
 li.item-web.item-wiki > .icon { background-image: url(rsrc/wikipedia.png); }
 li.item-txt > .icon { background-image: url(rsrc/txt.png); }

@@ -49,6 +49,7 @@ if ($_CONF['private-repository'])
 		<title><?=htmlspecialchars($_TITLE)?></title>
 		<link rel="stylesheet" href="main.css" type="text/css">
 		<script type="text/javascript" src="https://code.jquery.com/jquery-git.min.js" crossorigin="anonymous"></script>
+		<script>window.jQuery || document.write('<script src="rsrc/jquery-3.3.1.min.js">\x3C/script>')</script>
 	</head>
 	<body>
 		<!-- - - - - - - - - - - - - - - - - - - Root Folder - - - - - - - - - - - - - - - - - - -->
@@ -196,7 +197,9 @@ if ($_CONF['private-repository'])
 				<input type="radio" name="type" id="type-paste" value="paste"/> <label for="type-paste">Élem. copié</label>
 			</div>
 			<script type="text/javascript">
-				function FormSetType (type) {
+				function FormSetType (type, do_click) {
+					if (do_click !== false)
+						$("#add-form input#type-"+type).click();
 					$('#add-form fieldset')
 						.prop('hidden', true);
 					$('fieldset#add-form-'+type)
@@ -207,7 +210,7 @@ if ($_CONF['private-repository'])
 				$(function () {
 					$('#add-form input[name=type]').click(function() {
 						var type = $('#add-form input[name=type]:checked').val();
-						FormSetType(type);
+						FormSetType(type, false);
 					});
 					$('#add-form-cancel').click(function() {
 						$('#add-form')
@@ -237,7 +240,6 @@ if ($_CONF['private-repository'])
 						if (r != null) {
 							var DoEditDescr = function (is_yt, new_descr, new_url) {
 								if (is_yt) {
-									$("#add-form input#type-yt").click();
 									FormSetType('yt');
 									$("#add-link-yt").val(new_url);
 									$("#add-descr-yt").focus().val(new_descr);
@@ -251,7 +253,6 @@ if ($_CONF['private-repository'])
 							if ((r[3] == "" || r[3] == undefined) && add_descr.val() == "") {
 								var rdoc = /\.(pdf|png|jpg|jpeg|gif|tiff|bmp|zip|tar|gz|xz|tgz|djvu|epub)$/.exec(r[1]);
 								if (rdoc != null) {
-									$("#add-form input#type-doc").click();
 									FormSetType('doc');
 									$("#add-link-doc").val(r[1]);
 								} else {
@@ -305,7 +306,11 @@ if ($_CONF['private-repository'])
 				<div class="inputline"><span> <span><label for="add-paste-id">ID de l'élément :</label></span> <span><input type="text" id="add-paste-id" name="paste-id" readonly autoclear/></span> </span></div>
 				<div class="inputline"><span> <span><label for="add-paste-descr">Titre :</label></span> <span><input type="text" id="add-paste-descr" readonly autoclear class="display-field"/></span> </span></div>
 			</fieldset>
-			<span class="buttons"> <button type="button" id="add-form-cancel">Annuler</button> <button type="submit" id="add-form-ok">Ajouter</button> </span>
+			<span class="buttons">
+				<span> <input type="checkbox" id="add-form-memory"/> <label for="add-form-memory">Répéter</label> &nbsp;</span>
+				<button type="button" id="add-form-cancel">Annuler</button>
+				<button type="submit" id="add-form-ok">Ajouter</button>
+			</span>
 			<progress id="add-progress" hidden></progress>
 		</form>
 		<!-- - - - - - - - - - - - - - - - - - - Main Script - - - - - - - - - - - - - - - - - - -->
@@ -476,6 +481,10 @@ if ($_CONF['private-repository'])
 							$(li).find("a.orig").remove();
 						if (['png','jpg','jpeg','gif','tiff','bmp'].indexOf(item['ext']) !== -1) 
 							$(li).addClass("item-img");
+						if (['mp3','m4a','wav','aiff','flac','ogg'].indexOf(item['ext']) !== -1) 
+							$(li).addClass("item-audio");
+						if (['mp4','mov','webm','avi'].indexOf(item['ext']) !== -1) 
+							$(li).addClass("item-video");
 						if (['zip','tar','gz','xz','tgz'].indexOf(item['ext']) !== -1) 
 							$(li).addClass("item-archive");
 						if (['djvu','epub'].indexOf(item['ext']) !== -1) 
@@ -561,13 +570,10 @@ if ($_CONF['private-repository'])
 					.prop('hidden', false);
 				$("#add-form input[name=folderid]")
 					.val( folderid );
-				if ( "" != $("input#add-paste-id").val() ) {
-					$("#add-form input#type-paste").click();
+				if ( "" != $("input#add-paste-id").val() ) 
 					FormSetType('paste');
-				} else {
-					$("#add-form input#type-web").click();
+				else 
 					FormSetType('web');
-				}
 				$("#add-form").submit(function() {
 					$("#add-progress")
 						.prop('hidden', false);
@@ -584,6 +590,7 @@ if ($_CONF['private-repository'])
 									.remove();
 							var li = PrepareItem(data);
 							li_new.parentElement.insertBefore(li, li_new);
+							var type = $('#add-form input[name=type]:checked').val();
 							$("#add-form")
 								.prop('hidden', true)
 								.unbind('submit')
@@ -591,6 +598,11 @@ if ($_CONF['private-repository'])
 									.val("");
 							$("#add-progress")
 								.prop('hidden', true);
+							var add_form_memory = document.getElementById("add-form-memory").checked;
+							if (add_form_memory) {
+								AddNewItem(folderid, li_new);
+								FormSetType(type);
+							}
 						},
 						error: function (xhr) {
 							alert(xhr.responseText);
