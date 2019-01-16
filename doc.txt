@@ -9,6 +9,13 @@ Frontend Tips :
 	                              ⬇︎
 	                             blank
 
+Make offline version : 
+	# On the server :
+	mksquashfs links links.sqsh -ef links/excl-archive.txt -progress -no-xattrs -all-root
+	# On your computer :
+	squashfuse_ll links.sqsh [mountpoint] -o allow_other
+	# Run php-fpm and nginx with document root at the mountpoint
+
 Behaviors :
 	• When an item is moved, all tags associated with folders which will no longer contain the item are cleared
 	• La session PHP est créée (et le cookie déposé) uniquement lors de la soumission du formulaire de auth.php

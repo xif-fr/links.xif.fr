@@ -13,6 +13,24 @@ function Metadata_JSONPath ($id) {
 	return $_CONF['metadata-path']."/".$id.".json";
 }
 
+/* Walk the tree starting at $rootid, calling back $folderCB / $regularCB (can be null
+ *  if wanted) when a folder / regular item is found, with the item id and depth.
+ * Simple recursive depth-first search.
+ */
+function Metadata_TreeWalk ($rootid, $folderCB, $regularCB, $depth) {
+	$data = Metadata_Get($rootid);
+	if ($data['type'] == 'folder') {
+		if ($folderCB !== null)
+			$folderCB($rootid, $depth);
+		foreach ($data['item']['children'] as $childid) {
+			Metadata_TreeWalk($childid, $folderCB, $regularCB, $depth+1);
+		}
+	} else {
+		if ($regularCB !== null)
+			$regularCB($rootid, $depth);
+	}
+}
+
 /* Get/Store item data (JSON file).
  */
 function Metadata_Get ($id) {

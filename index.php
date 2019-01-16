@@ -491,6 +491,8 @@ if ($_CONF['private-repository'])
 							$(li).addClass("item-ebook");
 						if (item['ext'] == 'pdf') 
 							$(li).addClass("item-pdf");
+						if (['txt','rtf'].indexOf(item['ext']) !== -1) 
+							$(li).addClass("item-txt");
 						break;
 					case 'web':
 						$(li).find("a.icon")
