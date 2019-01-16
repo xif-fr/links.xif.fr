@@ -45,8 +45,8 @@ if (isset($_GET['script'])) {
 		};
 		Metadata_TreeWalk($_CONF['rootid'], null, $cb, 0);
 
-		file_put_contents("ytld_order.json", json_encode($output));
-		echo "ytdl.py order file for ".count($output)." items has been written to ./ytld_order.json";
+		file_put_contents("ytdl_order.json", json_encode($output));
+		echo "ytdl.py order file for ".count($output)." items has been written to ./ytdl_order.json";
 		exit(0);
 
 	}
