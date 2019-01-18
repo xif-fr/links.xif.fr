@@ -45,6 +45,14 @@ function Item_FrontendData ($id) {
 			$_ITEM['path'] = Metadata_GetBasePath($id);
 			break;
 		case 'yt':
+			$basepath = $_CONF['files-path'].Metadata_GetBasePath($id);
+			$_ITEM['saved'] = false;
+			if (file_exists($basepath)) {
+				if (!is_dir($basepath)) 
+					die( $id." : video directory not a directory" );
+				if (file_exists($basepath."/metadata.json")) 
+					$_ITEM['saved'] = true;
+			}
 			break;
 		case 'doc':
 			$_INFO['localurl'] = $_CONF['files-path'].Metadata_GetBasePath($id).".".$_INFO['ext'];
@@ -130,7 +138,15 @@ function Item_MoveFilesPost ($_ID, $_ORIG, $BasePathPre) {
 					die("failed to move '.save' directory");
 			}
 			break;
-		case 'yt': break;
+		case 'yt': {
+			$oldpath = $_CONF['files-path'].$BasePathPre;
+			if (file_exists($oldpath)) {
+				$newpath = $_CONF['files-path'].Metadata_GetBasePath($_ID);
+				$r = rename($oldpath, $newpath);
+				if ($r == false)
+					die("failed to move video directory");
+			}
+		} break;
 		case 'doc':
 			$oldpath = $_CONF['files-path'].$BasePathPre.".".$_ORIG['item']['ext'];
 			$newpath = $_CONF['files-path'].Metadata_GetBasePath($_ID).".".$_ORIG['item']['ext'];
@@ -303,7 +319,15 @@ if ($_REQUEST['action'] == 'delete') {
 			Metadata_EraseItem($_ID);
 			break;
 		case 'yt':
+			$basepath = $_CONF['files-path'].Metadata_GetBasePath($_ID);
 			Metadata_EraseItem($_ID);
+			if (file_exists($basepath)) {
+				@unlink($basepath."/video.mp4");
+				@unlink($basepath."/metadata.json");
+				$r = rmdir($basepath);
+				if ($r == false) 
+					die("failed to delete video directory");
+			}
 			break;
 		case 'doc':
 			$filepath = $_CONF['files-path'].Metadata_GetBasePath($_ID).".".$_ITEM['item']['ext'];

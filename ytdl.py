@@ -23,7 +23,7 @@ for item in data:
 	i += 1
 
 	print("--------------------------------------------------------------------")
-	print(i,"/",len(data)," - ",item['name'])
+	print(i,"/",len(data)," - ",item['path'])
 	print()
 
 	# Create directory if necessary
@@ -39,13 +39,17 @@ for item in data:
 			'format': 'best[ext=mp4][height<=720]',
 			'outtmpl': path+"/video.%(ext)s",
 		}
-		with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-			ydl.download([url])
+		try:
+			with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+				ydl.download([url])
+		except:
+			print("Failed to download video !")
 
 	# Retrieve metadata using Google API
-	#  but only if last retrieval is less than 1 day old
+	#  but only if last retrieval is less than 7 day old
 	metadata_path = path+"/metadata.json"
-	if not os.path.exists(metadata_path) or os.stat(metadata_path).st_mtime < now-24*3600:
+	if not os.path.exists(metadata_path) or os.stat(metadata_path).st_mtime < now-7*24*3600:
+
 		# Get video metadata
 		ytvid = ytapi.videos().list(
 			part='snippet',
@@ -54,31 +58,35 @@ for item in data:
 		print("Channel :",ytvid['items'][0]['snippet']['channelTitle'])
 		print("Video title :",ytvid['items'][0]['snippet']['title'])
 		print("Published at :",ytvid['items'][0]['snippet']['publishedAt'])
-		
+
 		# Get video comments
-		ytcom = ytapi.commentThreads().list(
-			part='snippet,replies',
-			order='relevance',
-			maxResults=50,
-			videoId=item['vid'],
-			textFormat='html'
-		).execute()
 		comments = []
-		for comment in ytcom['items']:
-			replies = []
-			if comment['snippet']['totalReplyCount'] != 0:
-				for reply in comment['replies']['comments']:
-					replies.append({
-						'author': reply['snippet']['authorDisplayName'],
-						'date': reply['snippet']['publishedAt'],
-						'html': reply['snippet']['textDisplay']
-					})
-			comments.append({
-				'author': comment['snippet']['topLevelComment']['snippet']['authorDisplayName'],
-				'date': comment['snippet']['topLevelComment']['snippet']['publishedAt'],
-				'html': comment['snippet']['topLevelComment']['snippet']['textDisplay'],
-				'replies': replies
-			})
+		try:
+			ytcom = ytapi.commentThreads().list(
+				part='snippet,replies',
+				order='relevance',
+				maxResults=50,
+				videoId=item['vid'],
+				textFormat='html'
+			).execute()
+			for comment in ytcom['items']:
+				replies = []
+				if comment['snippet']['totalReplyCount'] != 0 and 'replies' in comment:
+					for reply in comment['replies']['comments']:
+						replies.append({
+							'author': reply['snippet']['authorDisplayName'],
+							'date': reply['snippet']['publishedAt'],
+							'html': reply['snippet']['textDisplay']
+						})
+				comments.append({
+					'author': comment['snippet']['topLevelComment']['snippet']['authorDisplayName'],
+					'date': comment['snippet']['topLevelComment']['snippet']['publishedAt'],
+					'html': comment['snippet']['topLevelComment']['snippet']['textDisplay'],
+					'replies': replies
+				})
+		except:
+			print("Failed to retrieve comments")
+
 		# Save video metadata & comments
 		video_data = {
 			'info': ytvid['items'][0]['snippet'],

@@ -143,7 +143,7 @@ li.item > span.lock { background-image: url(rsrc/locked.png); }
 li.item-hr { height: 16px; }
 li.item-hr > hr { width: 40%; display: inline-block; position: relative; bottom: 6px; }
 li.item-hr > span { display: inline-block; height: 16px; }
-li.item > a.save { background-image: url(rsrc/saved-version.png); margin-right: 8px; }
+li.item > a.save { background-image: url(rsrc/saved-version.png); margin-right: 8px; display: none; }
 li.item-folder > .icon { background-image: url(rsrc/folder.png); }
 li.item-folder > p.descr { font-weight: bold; }
 li.item-folder > a.folder-anchor { background-image: url(rsrc/anchor.png); display: none; }
@@ -159,7 +159,8 @@ li.item > select {
 }
 li.item:hover > a.folder-anchor,
 li.item:hover > select,
-li.item:hover > span.folder-name {
+li.item:hover > span.folder-name,
+li.item:hover > a.save {
 	display: inline-block;
 }
 li.item > a.orig {

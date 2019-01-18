@@ -368,7 +368,7 @@ if ($_CONF['private-repository'])
 				if (is_alias) {
 					if (item['descr'] !== null) 
 						item['origdata']['descr'] = item['descr'];
-					item = item['origdata'];							/* /!\ $id -> alias id ; item['id'] -> orig id */
+					item = item['origdata'];							/* /!\ `id` -> alias id ; `item['id']` -> orig id */
 				}
 				var li = document.getElementById('tpl-'+item['type']).cloneNode(true);
 				li.id = id;
@@ -467,7 +467,7 @@ if ($_CONF['private-repository'])
 					case 'yt':
 						$(li).find("a.icon").attr('href', item['url']);
 						if (item['saved']) 
-							$(li).find("a.save").attr('href', item['localurl']);
+							$(li).find("a.save").attr('href', "video.php?id="+id);
 						else 
 							$(li).find("a.save").remove();
 						break;
