@@ -52,7 +52,8 @@ if ($_CONF['private-repository'])
 		<script>window.jQuery || document.write('<script src="rsrc/jquery-3.3.1.min.js">\x3C/script>')</script>
 	</head>
 	<body>
-		<!-- - - - - - - - - - - - - - - - - - - Root Folder - - - - - - - - - - - - - - - - - - -->
+
+		<!-- - - - - - - - - - - - - - - - - - - Root Folder and Header - - - - - - - - - - - - - - - - - - -->
 		<header>
 			<?php if (isset($_GET['path'])) { ?>
 			<span id="path">
@@ -126,15 +127,18 @@ if ($_CONF['private-repository'])
 		</script>
 		<div class="root" id="<?=$_ID?>">
 		</div>
+
 		<!-- - - - - - - - - - - - - - - - - - - Template Items - - - - - - - - - - - - - - - - - - -->
 		<div hidden>
 			<select id="tpl-action-select">
 				<option value="nothing"></option>
+				<option value="todo">Todo</option> 
 				<option value="copy">Copier</option> 
-				<option value="delete">Supprimer</option>
+				<option value="tags">Tags…</option> 
 				<option value="edit">Titre</option>
-				<option value="rename">Renommer</option>
+				<option value="rename">Renommer…</option>
 				<option value="toglpriv">Protection</option>
+				<option value="delete">Supprimer</option>
 				<option value="info">Informations</option>
 			</select>
 		</div>
@@ -183,6 +187,7 @@ if ($_CONF['private-repository'])
 				<button class="new-item">➕</button>
 			</li>
 		</ul>
+
 		<!-- - - - - - - - - - - - - - - - - - - Add Item Form - - - - - - - - - - - - - - - - - - -->
 		<form id="add-form" hidden>
 			<input type="hidden" name="action" value="new"/>
@@ -207,6 +212,7 @@ if ($_CONF['private-repository'])
 						.find('input:first')
 							.focus().click();
 				}
+				addnewitem_form_opened = false;
 				$(function () {
 					$('#add-form input[name=type]').click(function() {
 						var type = $('#add-form input[name=type]:checked').val();
@@ -218,6 +224,7 @@ if ($_CONF['private-repository'])
 							.unbind('submit')
 							.find("input[autoclear]")
 								.val("");
+						addnewitem_form_opened = false;
 					});
 					$('#add-descr-folder, #add-descr-doc, #add-descr-web, #add-descr-yt').on('keyup change', function() {
 						var descr = $(this).val();
@@ -313,6 +320,76 @@ if ($_CONF['private-repository'])
 			</span>
 			<progress id="add-progress" hidden></progress>
 		</form>
+
+		<!-- - - - - - - - - - - - - - - - - - - Tags and Tag editing form - - - - - - - - - - - - - - - - - - -->
+		<script type="text/javascript">
+			tags = <?=file_get_contents("tags.json")?>;
+			function TagSpanCreate (tag) {
+				var tag_info = tags[tag];
+				var tagspan = document.createElement('span');
+				tagspan.textContent = tag;
+				tagspan.className = 'tag';
+				tagspan.style.color = tag_info['text-color'];
+				tagspan.style.backgroundColor = tag_info['color'];
+				tagspan.style.border = tag_info['border'];
+				if (tag_info['bold']) 
+					tagspan.style.fontWeight = 'bold';
+				return tagspan;
+			}
+		</script>
+		<form id="tag-form" hidden>
+			<script type="text/javascript">
+				function FormTags (taglist, callback) {
+					$('#tag-form')
+						.prop('hidden', false);
+					$('#tag-form-tags > span')
+						.remove();
+					function add_tag (tag) {
+						tagform_taglist.push(tag);
+						var tagspan = TagSpanCreate(tag);
+						$(tagspan)
+							.insertBefore('#new-tag-sel')
+							.click(function () {
+								var tag = this.textContent;
+								$(this).remove();
+								tagform_taglist.splice(tagform_taglist.indexOf(tag), 1);
+							});
+					}
+					tagform_taglist = []; // global
+					for (var i = 0; i < taglist.length; i++) {
+						add_tag(taglist[i]);
+					}
+					$('#new-tag-sel').off('change').change(function () {
+						if (this.value != "") {
+							if (tagform_taglist.indexOf(this.value) != -1) 
+								alert(this.value+" is already a tag of this item");
+							else
+								add_tag(this.value);
+							this.value = "";
+						}
+					});
+					$('#tag-form-cancel').off('click').click(function() {
+						$('#tag-form').prop('hidden', true);
+					});
+					$('#tag-form-ok').off('click').click(function() {
+						callback(tagform_taglist);
+						$('#tag-form').prop('hidden', true);
+					});
+				}
+				$(function () {
+					$('#new-tag-sel').append( new Option("-", "") );
+					for (tag in tags) {
+						$('#new-tag-sel').append( new Option(tag, tag) );
+					}
+				});
+			</script>
+			<div id="tag-form-tags">  <select id="new-tag-sel"></select> </div>
+			<span class="buttons">
+				<button type="button" id="tag-form-cancel">Annuler</button>
+				<button type="button" id="tag-form-ok">Ok</button>
+			</span>
+		</form>
+
 		<!-- - - - - - - - - - - - - - - - - - - Main Script - - - - - - - - - - - - - - - - - - -->
 		<script type="text/javascript">
 
@@ -363,6 +440,7 @@ if ($_CONF['private-repository'])
 			/**************************** INSERT A RECEIVED ITEM IN THE TREE ****************************/
 
 			function PrepareItem (item) {
+				/*---------------- Preparation ----------------*/
 				var is_alias = (item['type'] == 'alias');
 				var id = item['id'];
 				if (is_alias) {
@@ -376,6 +454,7 @@ if ($_CONF['private-repository'])
 					$(li).find("img.alias").remove();
 				if (item['public']) 
 					$(li).find("span.lock").remove();
+				/*---------------- Create action menu ----------------*/
 				if (glob_modify) {
 					var select = document.getElementById('tpl-action-select').cloneNode(true);
 					if (is_alias) 
@@ -388,6 +467,7 @@ if ($_CONF['private-repository'])
 								.remove();
 					li.appendChild(select);
 				}
+				/*---------------- Item moving and description editing triggers ----------------*/
 				var disable_move = false;
 				var item_move;
 				if (item['type'] == 'hr') 
@@ -414,6 +494,9 @@ if ($_CONF['private-repository'])
 							clearTimeout(timer);
 						});
 					});
+				}
+				/*---------------- Item actions triggering ----------------*/
+				if (glob_modify) {
 					$(select).change(function () {
 						if (this.value == 'delete') {
 							DeleteItem(li, id);
@@ -439,9 +522,16 @@ if ($_CONF['private-repository'])
 						else if (this.value == 'info') {
 							alert(JSON.stringify(item, undefined, "   "));
 						}
+						else if (this.value == 'tags') {
+							EditTags(id, item, li);
+						}
+						else if (this.value == 'todo') {
+							AddTag(id, item, li, 'todo');
+						}
 						this.value = 'nothing';
 					});
 				}
+				/*---------------- Type-specific treatment ----------------*/
 				switch (item['type']) {
 					case 'folder':
 						$(li).find("a.folder-anchor")
@@ -516,6 +606,13 @@ if ($_CONF['private-repository'])
 					case 'txt':
 						break;
 				}
+				/*---------------- Tags ----------------*/
+				if (item['type'] != 'hr') {
+					for (var i = 0; i < item['tags'].length; i++) {
+						var tagspan = TagSpanCreate(item['tags'][i]);
+						li.appendChild(tagspan);
+					}
+				}
 				return li;
 			}
 
@@ -568,6 +665,9 @@ if ($_CONF['private-repository'])
 
 			function AddNewItem (folderid, li_new) {
 				glob_toload = null;
+				if (addnewitem_form_opened)
+					return;
+				addnewitem_form_opened = true;
 				$("#add-form")
 					.prop('hidden', false);
 				$("#add-form input[name=folderid]")
@@ -598,6 +698,7 @@ if ($_CONF['private-repository'])
 								.unbind('submit')
 								.find("input[autoclear]")
 									.val("");
+							addnewitem_form_opened = false;
 							$("#add-progress")
 								.prop('hidden', true);
 							var add_form_memory = document.getElementById("add-form-memory").checked;
@@ -671,6 +772,35 @@ if ($_CONF['private-repository'])
 					if (data != "ok") 
 						alert(data);
 					ReloadItem(id, li);
+				});
+			}
+
+			/**************************** EDIT TAGS ****************************/
+
+			function EditTags (id, item, li) {
+				FormTags(item['tags'], function (newtaglist) {
+					$.get( "action.php", {
+						'action' : 'tags',
+						'id' : id,
+						'taglist' : newtaglist.join()
+					}, function (data) {
+						if (data != "ok") 
+							alert(data);
+						ReloadItem(id, li);
+					});
+				});
+			}
+			function AddTag (id, item, li, tag) {
+				item['tags'].push(tag);
+				$.get( "action.php", {
+					'action' : 'tags',
+					'id' : id,
+					'taglist' : item['tags'].join()
+				}, function (data) {
+					if (data != "ok") 
+						alert(data);
+					var tagspan = TagSpanCreate(tag);
+					li.appendChild(tagspan);
 				});
 			}
 

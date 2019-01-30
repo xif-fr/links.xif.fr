@@ -24,7 +24,7 @@ $regexp_md5id = "/^".$_CONF['idregexp']."$/";
 
 header('Content-Type: text/plain');
 
-if (!isset($_REQUEST['action']) || !in_array($_REQUEST['action'], ['list', 'new', 'editdescr', 'delete', 'move', 'toglpriv', 'rename', 'getitem']))
+if (!isset($_REQUEST['action']) || !in_array($_REQUEST['action'], ['list', 'new', 'editdescr', 'delete', 'move', 'toglpriv', 'rename', 'getitem', 'tags']))
 	die("invalid action");
 
 /* Prepare the item data for sending to frontend.
@@ -41,7 +41,6 @@ function Item_FrontendData ($id) {
 		case 'folder':
 			if (!is_dir($_CONF['files-path'].Metadata_GetBasePath($id))) 
 				die( $id." : '".Metadata_GetBasePath($id)."' not a dir" );
-			unset($_INFO['tags']);
 			$_ITEM['path'] = Metadata_GetBasePath($id);
 			break;
 		case 'yt':
@@ -395,6 +394,31 @@ if ($_REQUEST['action'] == 'rename') {
 	$BasePathPre = Metadata_GetBasePath($_ID);
 	Metadata_Rename($_ID, $_REQUEST['newname']);
 	Item_MoveFilesPost($_ID, $_ITEM, $BasePathPre);
+	echo "ok";
+	exit();
+}
+
+/*------------------------------------ EDIT ITEM TAGS ------------------------------------*/
+
+if ($_REQUEST['action'] == 'tags') {
+	if (!isset($_ITEM)) 
+		die("undef item");
+	if ($_ITEM['type'] == 'hr') 
+		die("can't tag hr");
+	if (!isset($_REQUEST['taglist']))
+		die("undef tag list");
+	$_TAGS = json_decode(file_get_contents("tags.json"), true);
+	$taglist = explode(',', $_REQUEST['taglist']);
+	$cleantaglist = array();
+	foreach ($taglist as $tag) {
+		if ($tag == "") 
+			continue;
+		if (!isset($_TAGS[$tag])) 
+			die("tag '".$tag."' is not registered");
+		else
+			$cleantaglist[] = $tag;
+	}
+	Metadata_SetTags($_ID, $cleantaglist);
 	echo "ok";
 	exit();
 }

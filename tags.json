@@ -1,0 +1,7 @@
+{
+	"todo": { "color": "#666", "text-color": "#FFF", "bold": true, "border": "none" },
+	"à traiter": { "color": "#F46", "text-color": "#FFF", "bold": true, "border": "none" },
+	"cours": { "color": "#3AF", "text-color": "#FFF", "bold": false, "border": "none" },
+	"rsrc": { "color": "#078", "text-color": "#FFF", "bold": true, "border": "none" },
+	"tool": { "color": "#EE7", "text-color": "#000", "bold": false, "border": "solid #888 1px" }
+}

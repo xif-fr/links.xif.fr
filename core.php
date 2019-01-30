@@ -43,7 +43,7 @@ function Metadata_Get ($id) {
 	// Sanity checks
 	if (is_null($json)) 
 		die( "Failed to decode JSON file" );
-	if (!isset($json['parent']) || !isset($json['refby']) || !is_array($json['refby']) || !isset($json['type']) || !isset($json['item']) || !is_array($json['item']) || !isset($json['public']) || !isset($json['tags']) || !is_array($json['tags'])) 
+	if (!isset($json['parent']) || !isset($json['refby']) || !is_array($json['refby']) || !isset($json['type']) || !isset($json['item']) || !is_array($json['item']) || !isset($json['public']) || !isset($json['tags'])) 
 		die( "Metadata_Get on '".$id."' : missing field(s)" );
 	if ($json['type'] == "folder" && (!isset($json['item']['children']) || !isset($json['item']['name'])))
 		die( "Metadata_Get : missing folder info field(s)" );
@@ -307,7 +307,7 @@ function Metadata_SetInfoKey ($id, $key, $value) {
 	Metadata_Store($id, $data, true);
 }
 
-/* Add/Remove tag to item
+/* Add/Remove tag to item, Set tags
  */
 function Metadata_SetTag ($id, $tag, $set) {
 	$data = Metadata_Get($id);
@@ -315,6 +315,12 @@ function Metadata_SetTag ($id, $tag, $set) {
 		$data['tags'] = array_values(array_merge($data['tags'], array($tag)));
 	else 
 		$data['tags'] = array_values(array_diff($data['tags'], array($tag)));
+	Metadata_Store($id, $data, true);
+}
+function Metadata_SetTags ($id, $taglist) {
+	if (!is_array($taglist)) die();
+	$data = Metadata_Get($id);
+	$data['tags'] = $taglist;
 	Metadata_Store($id, $data, true);
 }
 
