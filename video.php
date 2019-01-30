@@ -3,6 +3,8 @@
 include_once "conf.php";
 include_once "core.php";
 
+date_default_timezone_set('Zulu');
+
 if (!isset($_GET['id'])) 
 	die("no id provided");
 if (preg_match("/^".$_CONF['idregexp']."$/", $_GET['id']) === 0) 
@@ -40,9 +42,28 @@ $_META = json_decode(file_get_contents($metapath), true);
 			}
 			h1 { font-size: 20pt; }
 			pre#descr {
-				font-size: 10pt;
+				font-size: 11pt;
 				font-family: sans-serif;
 				padding-left: 10px;
+			}
+			#ytcomments {
+				font-size: 11pt;
+				padding-top: 10px;
+			}
+			div.comment {
+				margin: 5px;
+				padding: 5px;
+				padding-left: 15px;
+				background-color: rgba(190, 190, 255, 0.2);
+				border-radius: 4px;
+			}
+			p.comment-author {
+				margin: 0px;
+				padding: 0px;
+				margin-bottom: 5px;
+			}
+			p.comment-text {
+				margin: 0px;
 			}
 		</style>
 	</head>
@@ -61,15 +82,48 @@ $_META = json_decode(file_get_contents($metapath), true);
 				?>
 			</span>
 		</header>
+		<?php
+			$posterurl = "";
+			if (isset($_META['info']['thumbnails'])) {
+				if (isset($_META['info']['thumbnails']['maxres'])) 
+					$posterurl = $_META['info']['thumbnails']['maxres']['url'];
+				else
+					$posterurl = array_values($_META['info']['thumbnails'])[0]['url'];
+			}
+			$title = htmlspecialchars($_META['info']['title']);
+			$channel = htmlspecialchars($_META['info']['channelTitle']);
+			$pubdate = explode('T',$_META['info']['publishedAt'])[0];
+			$descr = htmlspecialchars($_META['info']['description']);
+		?>
 		<div id="videocont">
-			<video controls src="files/<?=$_PATH?>/video.mp4" poster="<?=htmlspecialchars($_META['info']['thumbnails']['maxres']['url'])?>"></video>
+			<video controls src="files/<?=$_PATH?>/video.mp4" poster="<?=$posterurl?>"></video>
 		</div>
 		<div id="metacont">
-			<h1><?=htmlspecialchars($_META['info']['title'])?></h1>
-			<p><?=htmlspecialchars($_META['info']['channelTitle'])?> - <?=explode('T',$_META['info']['publishedAt'])[0]?></p>
-			<pre id="descr"><?=htmlspecialchars($_META['info']['description'])?></pre>
+			<h1><?=$title?></h1>
+			<p><?=$channel?> - <?=$pubdate?></p>
+			<pre id="descr"><?=$descr?></pre>
 			<hr/>
-			<pre><?php var_dump($_META['comments']); ?></pre>
+			<div id="ytcomments"><?php
+				foreach ($_META['comments'] as $comment) {
+					$date = explode('T',$comment['date'])[0];
+					?><div class="comment">
+						<p class="comment-author"><?=$comment['author']?> - <?=$date?></p>
+						<p class="comment-text"><?=$comment['html']?></p>
+						<?php
+						uasort($comment['replies'], function ($a, $b) {
+							return strtotime($a['date']) - strtotime($b['date']);
+						});
+						foreach ($comment['replies'] as $reply) {
+							$date = explode('T',$reply['date'])[0];
+							?><div class="comment">
+								<p class="comment-author"><?=$reply['author']?> - <?=$date?></p>
+								<p class="comment-text"><?=$reply['html']?></p>
+							</div><?php
+						}
+						?>
+					</div><?php
+				}
+			?></div>
 		</div>
 	</body>
 </html>
