@@ -22,7 +22,7 @@ ytapi = googleapiclient.discovery.build("youtube","v3",developerKey=ytapikey)
 
 # Alternative storage location for video files; False to store the video file
 #  alongside other files.
-altstore = "srv/stor/links/"
+altstore = "/srv/stor/links"
 
 update_comm_every_n_days = 7
 
@@ -45,13 +45,13 @@ for item in data:
 		print("Downloading @",url)
 		ydl_opts = {
 			'format': 'best[ext=mp4][height<=720]',
-			'outtmpl': path+"/video.%(ext)s" if (altstore == False) else altstore+"%(id)s.%(ext)s",
+			'outtmpl': path+"/video.%(ext)s" if (altstore == False) else altstore+"/%(id)s.%(ext)s",
 		}
 		try:
 			with youtube_dl.YoutubeDL(ydl_opts) as ydl:
 				ydl.download([url])
 			if altstore != False:
-				os.symlink( "/srv/stor/links/"+item['vid']+".mp4", path+"/video.mp4" )
+				os.symlink( altstore+"/"+item['vid']+".mp4", path+"/video.mp4" )
 		except:
 			print("Failed to download video !")
 
