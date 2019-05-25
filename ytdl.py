@@ -16,7 +16,15 @@ now = time.time()
 with open("ytdl_order.json") as f:
 	data = json.load(f)
 
-ytapi = googleapiclient.discovery.build("youtube","v3",developerKey="AIzaSyCfJeiXoaEzBNnCuEVHawwxCwJLXkcZS7o")
+with open('ytapikey.txt') as f:
+	ytapikey = f.readline().strip()
+ytapi = googleapiclient.discovery.build("youtube","v3",developerKey=ytapikey)
+
+# Alternative storage location for video files; False to store the video file
+#  alongside other files.
+altstore = "srv/stor/links/"
+
+update_comm_every_n_days = 7
 
 i = 0
 for item in data:
@@ -37,18 +45,20 @@ for item in data:
 		print("Downloading @",url)
 		ydl_opts = {
 			'format': 'best[ext=mp4][height<=720]',
-			'outtmpl': path+"/video.%(ext)s",
+			'outtmpl': path+"/video.%(ext)s" if (altstore == False) else altstore+"%(id)s.%(ext)s",
 		}
 		try:
 			with youtube_dl.YoutubeDL(ydl_opts) as ydl:
 				ydl.download([url])
+			if altstore != False:
+				os.symlink( "/srv/stor/links/"+item['vid']+".mp4", path+"/video.mp4" )
 		except:
 			print("Failed to download video !")
 
 	# Retrieve metadata using Google API
 	#  but only if last retrieval is less than 7 day old
 	metadata_path = path+"/metadata.json"
-	if not os.path.exists(metadata_path) or os.stat(metadata_path).st_mtime < now-7*24*3600:
+	if not os.path.exists(metadata_path) or os.stat(metadata_path).st_mtime < now - update_comm_every_n_days*24*3600:
 
 		# Get video metadata
 		ytvid = ytapi.videos().list(
