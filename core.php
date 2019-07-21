@@ -21,7 +21,7 @@ function Metadata_TreeWalk ($rootid, $folderCB, $regularCB, $depth) {
 	$data = Metadata_Get($rootid);
 	if ($data['type'] == 'folder') {
 		if ($folderCB !== null)
-			$folderCB($rootid, $depth);
+			$folderCB($rootid, $depth, $data);
 		foreach ($data['item']['children'] as $childid) {
 			Metadata_TreeWalk($childid, $folderCB, $regularCB, $depth+1);
 		}

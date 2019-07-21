@@ -79,6 +79,9 @@ header #main-tag-button > img {
 	margin-left: -6px;
 	margin-right: -6px;
 }
+header #batch-move-button {
+	margin-left: -5px;
+}
 .root {
 	margin: 35px;
 }
@@ -93,6 +96,10 @@ ul {
 	width: 50%;
 	margin-left: 25%;
 	margin-right: 25%;
+}
+h2.taggroup {
+	text-align: center;
+	font-size: 19px;
 }
 
 /*********************************** ITEMS ***********************************/
@@ -135,6 +142,7 @@ li.item-doc.item-ebook > .icon { background-image: url(rsrc/djvu.png); }
 li.item-doc.item-archive > .icon { background-image: url(rsrc/archive.png); }
 li.item-doc.item-audio > .icon { background-image: url(rsrc/audio.png); }
 li.item-doc.item-video > .icon { background-image: url(rsrc/video.png); }
+li.item-doc.item-html > .icon { background-image: url(rsrc/html.png); }
 li.item-doc.item-txt > .icon { background-image: url(rsrc/txt.png); }
 li.item-web > .icon { background-image: url(rsrc/web.png); }
 li.item-web.item-wiki > .icon { background-image: url(rsrc/wikipedia.png); }
@@ -201,7 +209,7 @@ span.tag {
 	display: inline-block;
 }
 
-/*********************************** ADD FORM ***********************************/
+/*********************************** FORMS ***********************************/
 
 form {
 	font-family: "Lucida Grande", "Lucida Sans", "Lucida", "Verdana", sans-serif;
@@ -215,6 +223,9 @@ form {
 	padding: 20px;
 	box-shadow: 5px 5px 8px #777;
 }
+
+/*********************************** ADD FORM ***********************************/
+
 #add-form #add-type-choice {
 	float: left;
 	margin-right: 30px;
@@ -256,10 +267,54 @@ progress#add-progress {
 	margin-top: 16px;
 	width: 20%;
 }
+
+/*********************************** TAG FORM ***********************************/
+
 #tag-form span.tag {
 	padding: 2px 5px;
 	top: 0px;
 }
 #tag-form-tags > span.tag:hover {
 	cursor: url(rsrc/x-cursor.png), not-allowed;
+}
+
+/*********************************** BATCH MOVE FORM ***********************************/
+
+#batchm-item {
+	font-family: Menlo, Monaco, monospace;
+	padding-left: 20px
+}
+#batchm-item > li.item:hover > a.folder-anchor,
+#batchm-item > li.item:hover > span.folder-name,
+#batchm-item > li.item:hover > a.save,
+#batchm-item > li.item:hover > a.orig {
+	display: inline-block;
+}
+#batchm-item > li.item:hover > select {
+	display: none;
+}
+#batchm-dests > li[selected] {
+	background-color: #AAA;
+}
+#batchm-dests {
+	max-height: 330px;
+	overflow-y: scroll;
+	font-family: monospace;
+}
+#batchm-form {
+	top: 10%;
+}
+#batchm-folder-go {
+	background: none;
+	background-image: url(rsrc/go.png);
+	border: none;
+	height: 16px;
+	width: 16px;
+	cursor: pointer;
+}
+#batchm-dest-descr {
+	text-align: center;
+	margin: 8px;
+	font-style: italic;
+	font-weight: bold;
 }

@@ -24,11 +24,11 @@ $regexp_md5id = "/^".$_CONF['idregexp']."$/";
 
 header('Content-Type: text/plain');
 
-if (!isset($_REQUEST['action']) || !in_array($_REQUEST['action'], ['list', 'new', 'editdescr', 'delete', 'move', 'toglpriv', 'rename', 'getitem', 'tags']))
+if (!isset($_REQUEST['action']) || !in_array($_REQUEST['action'], ['list', 'new', 'editdescr', 'delete', 'move', 'toglpriv', 'rename', 'getitem', 'tags', 'filter', 'filterlist', 'tree']))
 	die("invalid action");
 
 /* Prepare the item data for sending to frontend.
- * Used in 'list' request and 'new[type≠paste]' request.
+ * Used in 'list', 'filterlist', 'new[type≠paste]', and 'getitem' requests.
  * `null` if not public and not authenticated.
  */
 function Item_FrontendData ($id) {
@@ -80,6 +80,15 @@ function Item_FrontendData ($id) {
 	return array_merge($_ITEM, $_INFO);
 }
 
+if (isset($_REQUEST['folderpath'])) {
+	if (preg_match("/^\/(".$_CONF['nameregexp']."\/)*$/u", $_REQUEST['folderpath']) === 0) 
+		die("invalid folder path");
+	$_FOLDERID = Metadata_Path2ID($_REQUEST['folderpath']);
+	$_FOLDER = Metadata_Get($_FOLDERID);
+	if ($_FOLDER['type'] != 'folder') 
+		die("not a folder");
+}
+
 if (isset($_REQUEST['folderid'])) {
 	if (preg_match($regexp_md5id, $_REQUEST['folderid']) === 0) 
 		die("invalid folder id");
@@ -114,6 +123,73 @@ if ($_REQUEST['action'] == 'list') {
 		die("undef folder");
 	$_JSON = [];
 	foreach ($_FOLDER['item']['children'] as $id) 
+		$_JSON[] = Item_FrontendData($id);
+	header('Content-Type: application/json');
+	echo json_encode($_JSON);
+	exit();
+}
+
+/*------------------------------------ BUILD A TREE OF A FOLDER ------------------------------------*/
+
+if ($_REQUEST['action'] == 'tree') {
+	if (!isset($_FOLDER)) 
+		die("undef folder");
+	function BuildTreeWalk ($id) {
+		$data = Metadata_Get($id);
+		if ($data['type'] != 'folder') 
+			return null;
+		$_ITEM = array(
+			'id' => $id,
+			'name' => $data['item']['name'],
+			'descr' => $data['item']['descr'],
+			'children' => []
+		);
+		foreach ($data['item']['children'] as $childid) {
+			$child = BuildTreeWalk($childid);
+			if ($child !== null)
+				$_ITEM['children'][] = $child;
+		}
+		return $_ITEM;
+	}
+	$_JSON = BuildTreeWalk($_FOLDERID);
+	header('Content-Type: application/json');
+	echo json_encode($_JSON);
+	exit();
+}	
+
+/*------------------------------------ FILTER / SEARCH IN A FOLDER ------------------------------------*/
+
+if ($_REQUEST['action'] == 'filterlist') {
+	if (!isset($_FOLDER)) 
+		die("undef folder");
+	if (!isset($_REQUEST['rec']) || !isset($_REQUEST['type']))
+		die("undef rec or type");
+	$recursive = (int)$_REQUEST['rec'];
+	switch ($_REQUEST['type']) {
+
+		// Item which are tagged with $_REQUEST['tag']
+		case 'tag': {
+			if (!isset($_REQUEST['tag']))
+				die("undef tag to filter");
+
+			$_ITEMS = array();
+			$cb = function ($id, $depth) use (&$_ITEMS) {
+				$data = Metadata_Get($id);
+				if (in_array($_REQUEST['tag'], $data['tags'])) 
+					$_ITEMS[] = $id;
+			};
+			if ($_REQUEST['rec'])
+				Metadata_TreeWalk($_FOLDERID, $cb, $cb, 0);
+			else 
+				foreach ($_FOLDER['item']['children'] as $id)
+					$cb($id, 0);
+
+		} break;
+		default:
+			die("unknown filter type");
+	}
+	$_JSON = [];
+	foreach ($_ITEMS as $id) 
 		$_JSON[] = Item_FrontendData($id);
 	header('Content-Type: application/json');
 	echo json_encode($_JSON);

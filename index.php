@@ -100,13 +100,21 @@ if ($_CONF['private-repository'])
 						$("#main-tag-button").click(function () {
 							//////////////////////////////////////////////////////////////////////////////
 						});
+						$("#batch-move-button").click(function () {
+							$('#batchm-form').prop('hidden', false);
+							document.getElementById("batch-move-button").disabled = true;
+							BatchMoveNextItem();
+						});
 					});
 				</script>
 				<button id="recload">Tout dérouler</button>
 				<?php if (!$_PUBLICEDIT && !$_AUTHED) {
 					?> <span id="authbutton"><a href="auth.php?id=<?=$_ID?>"></a></span> <?php
 				} else {
-					?> <button id="main-tag-button"><img src="rsrc/tag.png"/></button> <?php
+					?> 
+					<button id="batch-move-button">Batch move</button>
+					<button id="main-tag-button"><img src="rsrc/tag.png"/></button>
+					<?php
 				}
 				?>
 			</div>
@@ -114,12 +122,12 @@ if ($_CONF['private-repository'])
 		<script type="text/javascript">
 			glob_modify = <?=(($_PUBLICEDIT||$_AUTHED)?'true':'false')?>;
 			glob_toload = null;
+			root_id = <?=('"'.$_ID.'"')?>;
 			$(function () {
-				var root_id = <?=('"'.$_ID.'"')?>;
 				$("#recload").click(function() {
 					glob_toload = [];
 					$(this).remove();
-					$("#"+root_id).empty();
+					$(document.getElementById(root_id)).empty();
 					LoadFolder(root_id);
 				});
 				LoadFolder(root_id);
@@ -229,7 +237,7 @@ if ($_CONF['private-repository'])
 					$('#add-descr-folder, #add-descr-doc, #add-descr-web, #add-descr-yt').on('keyup change', function() {
 						var descr = $(this).val();
 						descr = descr.replace(/[^a-zA-Z0-9\u00C0-\u02AF\u0391-\u03A9\u03B1-\u03C9]+/g,"-").replace(/(-+)$/,"").toLowerCase();
-						$("#"+this.id.replace("descr","name")).val(descr);
+						$(document.getElementById( this.id.replace("descr","name") )).val(descr);
 					});
 					$('#add-file').change(function() {
 						var filename = this.files[0].name.replace(/\.[^/.]+$/, "");
@@ -457,6 +465,7 @@ if ($_CONF['private-repository'])
 				/*---------------- Create action menu ----------------*/
 				if (glob_modify) {
 					var select = document.getElementById('tpl-action-select').cloneNode(true);
+					select.removeAttribute('id');
 					if (is_alias) 
 						$(select)
 							.find("[value=edit],[value=copy]")
@@ -583,6 +592,8 @@ if ($_CONF['private-repository'])
 							$(li).addClass("item-pdf");
 						if (['txt','rtf'].indexOf(item['ext']) !== -1) 
 							$(li).addClass("item-txt");
+						if (['html','htm','xhtml'].indexOf(item['ext']) !== -1) 
+							$(li).addClass("item-html");
 						break;
 					case 'web':
 						$(li).find("a.icon")
@@ -618,19 +629,29 @@ if ($_CONF['private-repository'])
 
 			/**************************** LOAD FOLDER ****************************/
 
-			function LoadFolder (folderid) {
+			function LoadItemsGroup (actionURL, container, preaction, postaction) {
 				var loading = document.createElement('progress');
-				var folder = document.getElementById(folderid);
-				folder.appendChild(loading);
-				$.getJSON( "action.php?action=list&folderid="+folderid, function (data) {
-					folder.removeChild(loading);
+				container.appendChild(loading);
+				$.getJSON( actionURL, function (data) {
+					container.removeChild(loading);
 					var ul = document.createElement('ul');
+					preaction(data, container, ul);
 					for (var i = 0; i < data.length; i++) {
 						if (data[i] === null) 
 							continue;
 						var li = PrepareItem(data[i]);
 						ul.appendChild(li);
 					}
+					container.appendChild(ul);
+					postaction(container, ul);
+				}).fail(function(xhr) {
+					alert(xhr.responseText);
+				});
+			}
+
+			function LoadFolder (folderid) {
+				var folder = document.getElementById(folderid);
+				LoadItemsGroup( "action.php?action=list&folderid="+folderid, folder, function () {}, function (container, ul) {
 					if (glob_modify) {
 						var li_new = document.getElementById('tpl-new').cloneNode(true);
 						li_new.id = null;
@@ -639,11 +660,8 @@ if ($_CONF['private-repository'])
 						});
 						ul.appendChild(li_new);
 					}
-					folder.appendChild(ul);
 					while (glob_toload !== null && glob_toload.length != 0) 
 						glob_toload.shift().click();
-				}).fail(function(xhr) {
-					alert(xhr.responseText);
 				});
 			}
 
@@ -688,7 +706,7 @@ if ($_CONF['private-repository'])
 						cache: false, contentType: false, processData: false,
 						success: function (data) {
 							if (data['deletedid'] !== undefined) 
-								$("#"+data['deletedid'])
+								$(document.getElementById( data['deletedid'] ))
 									.remove();
 							var li = PrepareItem(data);
 							li_new.parentElement.insertBefore(li, li_new);
@@ -818,10 +836,256 @@ if ($_CONF['private-repository'])
 			}
 
 		</script>
+
+		<!-- - - - - - - - - - - - - - - - - - - Batch move form - - - - - - - - - - - - - - - - - - -->
+
+		<form id="batchm-form" hidden>
+			<script type="text/javascript">
+				batchm_cur_id = null;
+				batchm_dest_tree = null;
+				function BatchMoveDestReset () {
+					$("#batchm-dest").val("").focus();
+					batchm_dest_path = [];
+					batchm_dest_path_relstr = null;
+					batchm_dest_id = null;
+					batchm_dest_suggest_i = -1;
+					batchm_dest_curfold = null;
+					batchm_dest_last_comp = null;
+					batchm_dest_lastv = null;
+					BatchMoveUpdateDest(true);
+				}
+
+				function BatchMoveNextItem () {
+					var next_item = null;
+					if (batchm_cur_id === null) {
+						var ul = document.getElementById(root_id).children[0];
+						if (ul.children.length === 0) {
+							BatchMoveStop(); return;
+						}
+						next_item = ul.children[0].cloneNode(true);
+					} else {
+						next_item = document.getElementById(batchm_cur_id).nextElementSibling;
+						if (next_item === null) {
+							BatchMoveStop(); return;
+						} else 
+							next_item = next_item.cloneNode(true);
+					}
+					if ($(next_item).hasClass('item-new')) {
+						BatchMoveStop(); return;
+					}
+					batchm_cur_id = next_item.id;
+					next_item.id = null;
+					$('#batchm-item').empty().append(next_item);
+				}
+
+				function BatchMoveStop () {
+					$('#batchm-form').prop('hidden', true);
+					$('#batchm-item').empty();
+					$('#batchm-form input').val("");
+					batchm_cur_id = null;
+					document.getElementById("batch-move-button").disabled = false;
+					document.getElementById("batchm-ok").disabled = true;
+					document.getElementById("batchm-basepath").disabled = false;
+				}
+
+				function BatchMoveLoadTree () {
+					$.ajax({
+						url: "action.php",
+						type: 'GET',
+						data: {
+							'action' : 'tree',
+							'folderpath' : $('#batchm-basepath').val(),
+						},
+						dataType: 'json',
+						success: function (data) {
+							document.getElementById("batchm-ok").disabled = false;
+							document.getElementById("batchm-basepath").disabled = true;
+							batchm_dest_tree = data;
+							BatchMoveDestReset();
+						},
+						error: function (xhr) {
+							alert(xhr.responseText);
+						}
+					});
+				}
+
+				function BatchMoveMove (dest_folder_id) {
+					console.log("Moving item "+batchm_cur_id+" to folder "+dest_folder_id)
+					$.ajax({
+						url: "action.php",
+						type: 'GET',
+						data: {
+							'action' : 'new',
+							'type' : 'paste',
+							'paste-type' : 'move',
+							'paste-id' : batchm_cur_id,
+							'folderid' : dest_folder_id
+						},
+						dataType: 'json',
+						success: function (data) {
+							BatchMoveNextItem();
+							$(document.getElementById(data['deletedid'])).remove();
+						},
+						error: function (xhr) {
+							alert(xhr.responseText);
+						}
+					});
+				}
+
+				function BatchMoveUpdateDest (force) {
+					var v = $("#batchm-dest").val();
+					if (batchm_dest_lastv === v && !force) return;
+					else batchm_dest_lastv = v;
+					var comp = v.split('/');
+					batchm_dest_last_comp = "";
+					batchm_dest_last_comp = comp[comp.length-1];
+					//-----//
+					batchm_dest_path_relstr = "";
+					var recTree = function (i, tree) {
+						if (batchm_dest_path.length == i) 
+							return tree;
+						else {
+							var child = tree['children'][ batchm_dest_path[i] ];
+							batchm_dest_path_relstr = batchm_dest_path_relstr + child['name'] + "/";
+							return recTree(i+1, child);
+						}
+					};
+					batchm_dest_curfold = recTree(0, batchm_dest_tree);
+					var path = $('#batchm-basepath').val() + batchm_dest_path_relstr;
+					//-----//
+					var destul = document.getElementById('batchm-dests');
+					$(destul).empty();
+					for (var i in batchm_dest_curfold['children']) {
+						var chnm = batchm_dest_curfold['children'][i]['name'];
+						if (chnm.toLowerCase().startsWith(batchm_dest_last_comp.toLowerCase())) {
+							var li = document.createElement('li');
+							li.setAttribute('name', chnm);
+							li.innerText = path + chnm;
+							destul.appendChild(li);
+						}
+					}
+					//-----//
+					batchm_dest_suggest_i = -1;
+					batchm_dest_id = batchm_dest_curfold['id'];
+					document.getElementById('batchm-dest-descr').innerText = batchm_dest_curfold['descr'];
+				}
+
+				$(function () {
+					$("#batchm-dest").keydown(function (evt) {
+						if (batchm_dest_tree === null) 
+							return;
+						var sel = document.getElementById('batchm-dests').children;
+						if (batchm_dest_suggest_i != -1) {
+							sel[ batchm_dest_suggest_i ].removeAttribute('selected');
+						}
+						if (evt.keyCode == 38) { // `ArrowUp` : Scroll up suggestions
+							if (batchm_dest_suggest_i != -1) {
+								batchm_dest_suggest_i--;
+								sel[ batchm_dest_suggest_i ].setAttribute('selected', null);
+							}
+						}
+						else if (evt.keyCode == 40) { // `ArrowDown` : Scroll down suggestions
+							if (batchm_dest_suggest_i != sel.length-1)
+								batchm_dest_suggest_i++;
+							if (batchm_dest_suggest_i != -1)
+								sel[ batchm_dest_suggest_i ].setAttribute('selected', null);
+						}
+						else if (evt.keyCode == 13) { // `Enter`
+							if (evt.shiftKey) { // Perform move
+								BatchMoveMove(batchm_dest_id);
+								BatchMoveDestReset();
+							}
+							else { // Validate suggestion
+								if (batchm_dest_suggest_i != -1) {
+									var suggestion = sel[ batchm_dest_suggest_i ].getAttribute('name');
+									for (var i in batchm_dest_curfold['children']) 
+										if (batchm_dest_curfold['children'][i]['name'] == suggestion) 
+											batchm_dest_path.push(i);
+									BatchMoveUpdateDest(true);
+									$("#batchm-dest").val( batchm_dest_path_relstr );
+								}
+							}
+						}
+						else if (evt.keyCode == 8) { // `Backspace` : Discard last component of the path (reset to batchm_dest_path_relstr)
+							if (batchm_dest_last_comp == "") 
+								batchm_dest_path.pop();
+							BatchMoveUpdateDest(true);
+							$("#batchm-dest").val( batchm_dest_path_relstr );
+						}
+						else if (evt.keyCode == 191) { // `/` : Validate last component (load new folder)
+							var found = false;
+							for (var i in batchm_dest_curfold['children']) {
+								if (batchm_dest_curfold['children'][i]['name'] == batchm_dest_last_comp) {
+									batchm_dest_path.push(i);
+									found = true;
+								}
+							}
+							if (found) return;
+						} else return;
+						evt.preventDefault();
+					}).keyup(function () { // Update suggestions
+						if (batchm_dest_tree === null) 
+							return;
+						BatchMoveUpdateDest(false);
+						var sel = document.getElementById('batchm-dests').children;
+						if (sel.length == 1) {
+							batchm_dest_suggest_i = 0;
+							sel[0].setAttribute('selected', null);
+						}
+					});
+					$("#batchm-stop").click(BatchMoveStop);
+					$("#batchm-skip").click(BatchMoveNextItem);
+					$("#batchm-ok").click(BatchMoveMove);
+					$("#batchm-load").click(BatchMoveLoadTree);
+					$("#batchm-folder-go").click(function () {
+						window.open("?path="+$('#batchm-basepath').val()+batchm_dest_path_relstr, "_blank");
+					});
+				});
+			</script>
+			<div class="inputline"><span> <span><label for="batchm-basepath">Base folder path :</label></span> <span><input type="text" id="batchm-basepath" value="/"/></span> <button type="button" id="batchm-load" style="width:80px">Load tree</button> </span></div>
+			<hr style="margin: 20px"/>
+			<div id="batchm-item"></div>
+			<hr style="margin: 20px"/>
+			<div class="inputline"><span> <span><label for="batchm-dest">Rel. destination :</label></span> <span><input type="text" id="batchm-dest"/></span> <button type="button" id="batchm-folder-go"></button> </span></div>
+			<div id="batchm-dest-descr"></div>
+			<ul id="batchm-dests"></ul>
+			<span class="buttons">
+				<button type="button" id="batchm-stop">Stop</button>
+				<button type="button" id="batchm-skip">Skip</button>
+				<button type="button" id="batchm-ok" disabled>Move</button>
+			</span>
+		</form>
+
+		<!-- - - - - - - - - - - - - - - - - - - Main page footer - - - - - - - - - - - - - - - - - - -->
+
 		<?php if ($_ID == $_CONF['rootid']) { ?>
 		<p id="comments">
 			Ce modeste <del>outil de procrastination massive</del> répertoire de liens regroupe les ressources dont nous souhaîtons nous abreuver. Ses éléments ne sont pas destinés à rester ainsi <i>ad vitam æternam</i>; plutôt, chaque catégorie scientifique est amenée à évoluer, avec notre apprentissage, d'une simple <i>todo-list</i> malpropre vers un corpus synthétique et utile de documents. <a href="doc.txt">RTFM</a>.
 		</p>
+		<h2 class="taggroup">À traiter</h2>
+		<div class="root" id="atraiterroot"></div>
+		<h2 class="taggroup">Ça peut servir</h2>
+		<div class="root" id="toolsroot"></div>
+		<script type="text/javascript">
+			$(function () {
+				function LoadTagGroup (tagrootid, tagname) {
+					var container = document.getElementById(tagrootid);
+					LoadItemsGroup( "action.php?action=filterlist&folderid=<?=$_CONF['rootid']?>&rec=1&type=tag&tag="+tagname, container, function (data) {
+						var i = data.length, temp, randi;
+						while (0 !== i) {
+							randi = Math.floor(Math.random() * i); i -= 1;
+							temp = data[i]; data[i] = data[randi]; data[randi] = temp;
+						}
+					}, function () {
+						var tagroot = $(document.getElementById(tagrootid));
+						tagroot.find("li > .tag").remove();
+						tagroot.find("li > select > option").filter('[value="todo"],[value="copy"],[value="rename"],[value="delete"]').remove();
+					} );
+				}
+				LoadTagGroup("toolsroot", "tool");
+				LoadTagGroup("atraiterroot", "à traiter");
+			});
+		</script>
 		<?php } ?>
 	</body>
 </html>
