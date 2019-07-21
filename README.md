@@ -2,5 +2,5 @@
 
 Minimalistic web-based folder-ed links/documents/knowledge manager
 
-## Screenshots
-![alt text](screenshots/1.png)
+## Examples
+See <https://l.xif.fr/>.
