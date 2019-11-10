@@ -580,7 +580,7 @@ if ($_CONF['private-repository'])
 							$(li).find("a.orig").remove();
 						if (['png','jpg','jpeg','gif','tiff','bmp'].indexOf(item['ext']) !== -1) 
 							$(li).addClass("item-img");
-						if (['mp3','m4a','wav','aiff','flac','ogg'].indexOf(item['ext']) !== -1) 
+						if (['mp3','m4a','wav','aiff','flac','ogg', 'opus'].indexOf(item['ext']) !== -1) 
 							$(li).addClass("item-audio");
 						if (['mp4','mov','webm','avi'].indexOf(item['ext']) !== -1) 
 							$(li).addClass("item-video");
@@ -756,7 +756,6 @@ if ($_CONF['private-repository'])
 					.prop('contenteditable',true)
 					.focus()
 					.blur(function() {
-						field.innerText = field.innerText;
 						$(field)
 							.prop('contenteditable',false)
 							.off('blur keydown');

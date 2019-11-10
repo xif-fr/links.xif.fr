@@ -116,6 +116,7 @@ li.item > p.descr {
 	vertical-align: middle;
 	padding-top: 4px;
 	margin: 0px 9px;
+	white-space: pre-wrap;
 }
 li.item > .icon,
 li.item > a.save,
