@@ -24,7 +24,7 @@ ytapi = googleapiclient.discovery.build("youtube","v3",developerKey=ytapikey)
 #  alongside other files.
 altstore = "/srv/stor/links"
 
-update_comm_every_n_days = 7
+update_comm_every_n_days = 20
 
 i = 0
 for item in data:
@@ -56,7 +56,7 @@ for item in data:
 			print("Failed to download video !")
 
 	# Retrieve metadata using Google API
-	#  but only if last retrieval is less than 7 day old
+	#  but only if last retrieval is less than `update_comm_every_n_days` days old
 	metadata_path = path+"/metadata.json"
 	if not os.path.exists(metadata_path) or os.stat(metadata_path).st_mtime < now - update_comm_every_n_days*24*3600:
 
@@ -65,6 +65,10 @@ for item in data:
 			part='snippet',
 			id=item['vid'],
 		).execute()
+		if ytvid['pageInfo']['totalResults'] == 0:
+			print("!!!!!!!!!!!!!!!!!!!!!!!!!! Video not found !!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+			continue
+			
 		print("Channel :",ytvid['items'][0]['snippet']['channelTitle'])
 		print("Video title :",ytvid['items'][0]['snippet']['title'])
 		print("Published at :",ytvid['items'][0]['snippet']['publishedAt'])
