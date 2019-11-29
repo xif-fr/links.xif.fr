@@ -66,7 +66,7 @@ else
 		<div class="root" id="<?=$_ID?>"><ul>
 <?php
 $regularCB = function ($id, $depth) {
-	global $_CONF, $folder_anchor_page;
+	global $_CONF, $folder_anchor_page, $_AUTHED;
 	$_ITEM = Metadata_Get($id);
 	$_INFO = $_ITEM['item'];
 	$is_alias = ($_ITEM['type'] == 'alias');
@@ -162,7 +162,7 @@ if (file_exists($basepath."/metadata.json")) {
 	?></li><?php
 };
 $folderCB = function ($id, $depth, $_ITEM, $pre) {
-	global $folder_anchor_page;
+	global $folder_anchor_page, $_AUTHED;
 	if ($depth == 0)
 		return true;
 	if (!$_ITEM['public'] && !$_AUTHED) 
