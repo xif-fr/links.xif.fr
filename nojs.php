@@ -34,10 +34,10 @@ if ($_CONF['private-repository'])
 	if (!$_AUTHED)
 		header("Location: auth.php");
 
-if (isset($_GET['fnojs']))
-	$folder_anchor_page = "nojs.php?fnojs&";
-else
+if (isset($_GET['fjs']))
 	$folder_anchor_page = "index.php?";
+else
+	$folder_anchor_page = "nojs.php?";
 
 ?><!DOCTYPE html>
 <html>
