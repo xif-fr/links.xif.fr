@@ -21,10 +21,14 @@ function Metadata_TreeWalk ($rootid, $folderCB, $regularCB, $depth) {
 	$data = Metadata_Get($rootid);
 	if ($data['type'] == 'folder') {
 		if ($folderCB !== null)
-			$folderCB($rootid, $depth, $data);
+			$continue = $folderCB($rootid, $depth, $data, true);
+		if (isset($continue) && $continue === false)
+			return;
 		foreach ($data['item']['children'] as $childid) {
 			Metadata_TreeWalk($childid, $folderCB, $regularCB, $depth+1);
 		}
+		if ($folderCB !== null)
+			$folderCB($rootid, $depth, $data, false);
 	} else {
 		if ($regularCB !== null)
 			$regularCB($rootid, $depth);

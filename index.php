@@ -148,6 +148,7 @@ if ($_CONF['private-repository'])
 				<option value="toglpriv">Protection</option>
 				<option value="delete">Supprimer</option>
 				<option value="info">Informations</option>
+				<option value="nojs">Page NoJS</option>
 			</select>
 		</div>
 		<ul hidden>
@@ -474,6 +475,10 @@ if ($_CONF['private-repository'])
 						$(select)
 							.find("[value=rename],[value=copy]")
 								.remove();
+					if (item['type'] != 'folder')
+						$(select)
+							.find("[value=nojs]")
+								.remove();
 					li.appendChild(select);
 				}
 				/*---------------- Item moving and description editing triggers ----------------*/
@@ -537,6 +542,9 @@ if ($_CONF['private-repository'])
 						else if (this.value == 'todo') {
 							AddTag(id, item, li, 'todo');
 						}
+						else if (this.value == 'nojs') {
+							window.location = "nojs.php?path="+item['path'];
+						}
 						this.value = 'nothing';
 					});
 				}
@@ -594,6 +602,7 @@ if ($_CONF['private-repository'])
 							$(li).addClass("item-txt");
 						if (['html','htm','xhtml'].indexOf(item['ext']) !== -1) 
 							$(li).addClass("item-html");
+						// do not forget to add new icons in nojs.php too
 						break;
 					case 'web':
 						$(li).find("a.icon")

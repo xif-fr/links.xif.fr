@@ -88,7 +88,7 @@ header #batch-move-button {
 .root button {
 	cursor: pointer;
 }
-ul {
+.root ul {
 	list-style-type: none;
 	padding-left: 25px;
 }
@@ -108,7 +108,8 @@ li.item {
 	line-height: 16px;
 	font-size: 0px;
 }
-li.item > p.descr {
+li.item > p.descr,
+li.item > details > summary > p.descr {
 	max-width: 90%;
 	margin: 0px;
 	display: inline-block;
@@ -119,9 +120,10 @@ li.item > p.descr {
 	white-space: pre-wrap;
 }
 li.item > .icon,
+li.item > details > summary > .icon,
 li.item > a.save,
-li.item > img.dling,
 li.item > a.folder-anchor,
+li.item > details > summary > a.folder-anchor,
 li.item > button.delete,
 li.item > button.new-item,
 li.item > span.lock,
@@ -153,9 +155,9 @@ li.item-hr { height: 16px; }
 li.item-hr > hr { width: 40%; display: inline-block; position: relative; bottom: 6px; }
 li.item-hr > span { display: inline-block; height: 16px; }
 li.item > a.save { background-image: url(rsrc/saved-version.png); margin-right: 8px; display: none; }
-li.item-folder > .icon { background-image: url(rsrc/folder.png); }
-li.item-folder > p.descr { font-weight: bold; }
-li.item-folder > a.folder-anchor { background-image: url(rsrc/anchor.png); display: none; }
+li.item-folder > .icon, li.item-folder > details > summary > .icon { background-image: url(rsrc/folder.png); }
+li.item-folder > p.descr, li.item-folder > details > summary > p.descr { font-weight: bold; }
+li.item-folder > a.folder-anchor, li.item-folder > details > summary > a.folder-anchor { background-image: url(rsrc/anchor.png); display: none; }
 li.item > select {
 	display: none;
 	border-radius: unset;
@@ -167,8 +169,10 @@ li.item > select {
 	top: 1px;
 }
 li.item:hover > a.folder-anchor,
+li.item:hover > details > summary > a.folder-anchor,
 li.item:hover > select,
 li.item:hover > span.folder-name,
+li.item:hover > details > summary > span.folder-name,
 li.item:hover > a.save {
 	display: inline-block;
 }
@@ -183,7 +187,8 @@ li.item > a.orig {
 body[showlinks=true] li.item:hover > a.orig {
 	display: inline-block;
 }
-li.item-folder > span.folder-name {
+li.item-folder > span.folder-name,
+li.item-folder > details > summary > span.folder-name {
 	display: none;
 	font-size: 10px;
 	font-style: italic;
