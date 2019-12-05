@@ -66,9 +66,12 @@ if ($_CONF['private-repository'])
 						$path = $path.$name."/";
 						?> &gt; <a href="?path=<?=$path?>"><?=$name?></a> <?php
 					}
-				?>
+				?> |
+			<?php }
+			$nojs_path_arg = isset($_GET['path']) ? ("?path=".$_GET['path']) : "";
+			?>
 			</span>
-			<?php } ?>
+			<a id="nojs_button" href="nojs.php<?=$nojs_path_arg?>">NoJS</a>
 			<div id="header-right">
 				<span class="option"> <input type="checkbox" id="option-edit" checked/> <label for="option-edit">Édition</label> </span>
 				<span class="option"> <input type="checkbox" id="option-links"/> <label for="option-links">Afficher URLs</label> </span>
@@ -80,6 +83,10 @@ if ($_CONF['private-repository'])
 						var keyValue = document.cookie.match('(^|;) ?'+key+'=([^;]*)(;|$)');
 						return keyValue ? keyValue[2] : null;
 					}
+					disable_ajax_error = false;
+					$(window).on("beforeunload", function(e) {
+						disable_ajax_error = true;
+					});
 					activateEdit = true;
 					$(function () {
 						var val = (getCookie("showlinks") !== "false");
@@ -148,7 +155,6 @@ if ($_CONF['private-repository'])
 				<option value="toglpriv">Protection</option>
 				<option value="delete">Supprimer</option>
 				<option value="info">Informations</option>
-				<option value="nojs">Page NoJS</option>
 			</select>
 		</div>
 		<ul hidden>
@@ -475,10 +481,6 @@ if ($_CONF['private-repository'])
 						$(select)
 							.find("[value=rename],[value=copy]")
 								.remove();
-					if (item['type'] != 'folder')
-						$(select)
-							.find("[value=nojs]")
-								.remove();
 					li.appendChild(select);
 				}
 				/*---------------- Item moving and description editing triggers ----------------*/
@@ -541,9 +543,6 @@ if ($_CONF['private-repository'])
 						}
 						else if (this.value == 'todo') {
 							AddTag(id, item, li, 'todo');
-						}
-						else if (this.value == 'nojs') {
-							window.location = "nojs.php?path="+item['path'];
 						}
 						this.value = 'nothing';
 					});
@@ -654,7 +653,8 @@ if ($_CONF['private-repository'])
 					container.appendChild(ul);
 					postaction(container, ul);
 				}).fail(function(xhr) {
-					alert(xhr.responseText);
+					if (!disable_ajax_error)
+						alert(xhr.responseText);
 				});
 			}
 
@@ -684,7 +684,8 @@ if ($_CONF['private-repository'])
 					var newli = PrepareItem(data);
 					li.parentElement.replaceChild(newli, li);
 				}).fail(function(xhr) {
-					alert(xhr.responseText);
+					if (!disable_ajax_error)
+						alert(xhr.responseText);
 				});
 			}
 

@@ -50,7 +50,7 @@ else
 		<header>
 			<?php if (isset($_GET['path'])) { ?>
 			<span id="path">
-				<a id="homebutton" href="<?=$folder_anchor_page?>"></a>
+				<a id="homebutton" href="index.php"></a>
 				<?php
 					$comps = explode("/", $_GET['path']);
 					$path = "/";
@@ -59,9 +59,12 @@ else
 						$path = $path.$name."/";
 						?> &gt; <a href="?path=<?=$path?>"><?=$name?></a> <?php
 					}
-				?>
+				?> |
+			<?php }
+			$nojs_path_arg = isset($_GET['path']) ? ("?path=".$_GET['path']) : "";
+			?>
 			</span>
-			<?php } ?>
+			<a id="nojs_button" href="index.php<?=$nojs_path_arg?>">JS</a>
 		</header>
 		<div class="root" id="<?=$_ID?>"><ul>
 <?php

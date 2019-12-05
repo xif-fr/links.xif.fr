@@ -19,7 +19,7 @@ header #path {
 	font-size: 12px;
 	font-weight: bold;
 	color: #AAA;
-	position: absolute;
+	position: relative;
 	top: 3px;
 	left: 7px;
 }
@@ -28,7 +28,16 @@ header #path a {
 	font-weight: normal;
 	text-decoration: none;
 }
-header #path a:hover {
+header a#nojs_button {
+	font-size: 12px;
+	position: relative;
+	top: 4px;
+	left: 12px;
+	font-style: italic;
+	color: #CCF;
+	text-decoration: none;
+}
+header #path a:hover, header a#nojs_button:hover {
 	text-decoration: underline;
 }
 header #homebutton {
