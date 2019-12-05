@@ -165,6 +165,7 @@ if ($_REQUEST['action'] == 'filterlist') {
 	if (!isset($_REQUEST['rec']) || !isset($_REQUEST['type']))
 		die("undef rec or type");
 	$recursive = (int)$_REQUEST['rec'];
+	$_ITEMS = array();
 	switch ($_REQUEST['type']) {
 
 		// Item which are tagged with $_REQUEST['tag']
@@ -172,8 +173,9 @@ if ($_REQUEST['action'] == 'filterlist') {
 			if (!isset($_REQUEST['tag']))
 				die("undef tag to filter");
 
-			$_ITEMS = array();
-			$cb = function ($id, $depth) use (&$_ITEMS) {
+			$cb = function ($id, $depth, $data, $pre) use (&$_ITEMS) {
+				if ($pre === false)
+					return;
 				$data = Metadata_Get($id);
 				if (in_array($_REQUEST['tag'], $data['tags'])) 
 					$_ITEMS[] = $id;

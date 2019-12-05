@@ -31,7 +31,7 @@ function Metadata_TreeWalk ($rootid, $folderCB, $regularCB, $depth) {
 			$folderCB($rootid, $depth, $data, false);
 	} else {
 		if ($regularCB !== null)
-			$regularCB($rootid, $depth);
+			$regularCB($rootid, $depth, null, null);
 	}
 }
 
