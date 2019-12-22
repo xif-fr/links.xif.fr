@@ -30,6 +30,7 @@ if (!isset($_REQUEST['action']) || !in_array($_REQUEST['action'], ['list', 'new'
 /* Prepare the item data for sending to frontend.
  * Used in 'list', 'filterlist', 'new[type≠paste]', and 'getitem' requests.
  * `null` if not public and not authenticated.
+ * Partially reimplemented in `nojs.php`
  */
 function Item_FrontendData ($id) {
 	global $_CONF, $_AUTHED;
