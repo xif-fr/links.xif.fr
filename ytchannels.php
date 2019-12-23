@@ -38,9 +38,11 @@ if (!$_AUTHED)
 					$_META = json_decode(file_get_contents($metapath), true);
 					$channel = $_META['info']['channelTitle'];
 					$_ITEM['item']['pubdate'] = explode('T',$_META['info']['publishedAt'])[0];
+					$_ITEM['item']['saved'] = true;
 				} else {
 					$_ITEM['item']['pubdate'] = "?";
 					$channel = "??";
+					$_ITEM['item']['saved'] = false;
 				}
 				if (!isset($_CHANNELS[$channel])) {
 					$_CHANNELS[$channel] = array();
@@ -65,7 +67,9 @@ if (!$_AUTHED)
 				<li class="item item-yt" id="<?=$_ITEM['id']?>">
 				<a class="icon" href="<?=htmlspecialchars($_INFO['url'])?>" target="_blank"></a>
 				<p class="descr"><?=$_INFO['pubdate']?> | <?=htmlspecialchars($_INFO['descr'])?></p>
-				<?php
+				<?php if ($_INFO['saved']) {
+					?> <a class="save" href="video.php?id=<?=$_ITEM['id']?>"></a> <?php
+				}
 			}
 			?> </ul> <?php
 		}
