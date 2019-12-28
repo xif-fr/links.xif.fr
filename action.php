@@ -490,7 +490,7 @@ if ($_REQUEST['action'] == 'tags') {
 	$taglist = explode(',', $_REQUEST['taglist']);
 	$cleantaglist = array();
 	foreach ($taglist as $tag) {
-		if ($tag == "") 
+		if ($tag == "" || in_array($tag, $cleantaglist)) 
 			continue;
 		if (!isset($_TAGS[$tag])) 
 			die("tag '".$tag."' is not registered");

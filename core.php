@@ -188,6 +188,8 @@ function Metadata_CreateAlias ($orig_id, $parent_id) {
 		'descr' => null
 	];
 	$id = Metadata_CreateItem($parent_id, 'alias', $item, $orig_data['item']['name']);
+	if ($orig_id == $parent_id) 
+		$orig_data = Metadata_Get($orig_id); // reload data modified by Metadata_CreateItem if self-alasing
 	$orig_data['refby'][] = $id;
 	Metadata_Store($orig_id, $orig_data, true);
 	return $id;
@@ -225,6 +227,24 @@ function Metadata_ChangePos ($id, $newpos) {
 	Metadata_Store($data['parent'], $parent_data, true);
 }
 
+/* Tell if `$id` is a (grand,grand-grand,…) child of `$folder`
+ *  (which does not have to be a folder)
+ */
+function Metadata_IsChildOf ($id, $folder) {
+	if ($id == $folder) 
+		return false;
+	return Metadata_IsChildOf_recur($id, $folder);
+}
+function Metadata_IsChildOf_recur ($id, $folder) {
+	global $_CONF;
+	if ($id == $folder) 
+		return true;
+	if ($id == $_CONF['rootid']) 
+		return false;
+	$data = Metadata_Get($id);
+	return Metadata_IsChildOf_recur($data['parent'], $folder);
+}
+
 /* Move an item through the tree, at the back of the folder $newparent
  */
 function Metadata_Move ($id, $newparent) {
@@ -235,6 +255,8 @@ function Metadata_Move ($id, $newparent) {
 	$data = Metadata_Get($id);
 	if ($data['parent'] == $newparent) 
 		die( "Metadata_Move : can't move the item '".$id."' in its own folder '".$newparent."'" );
+	if (Metadata_IsChildOf_recur($newparent, $id)) 
+		die( "Metadata_Move : can't move the folder '".$id."' in itself" );
 	// Check if name not already used in new folder, and add in the new folder
 	$new_parent_data = Metadata_Get($newparent);
 	if (isset($data['item']['name']))
