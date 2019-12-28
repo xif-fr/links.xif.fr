@@ -4,5 +4,7 @@
 	"cours": { "color": "#3AF", "text-color": "#FFF", "bold": false, "border": "none" },
 	"rsrc": { "color": "#078", "text-color": "#FFF", "bold": true, "border": "none" },
 	"tool": { "color": "#EE7", "text-color": "#000", "bold": false, "border": "solid #888 1px" },
-	"surligné": { "color": "transparent", "text-color": "#000", "bold": false, "border": "solid #888 1px" }
+	"surligné": { "color": "transparent", "text-color": "#000", "bold": false, "border": "solid #888 1px" },
+	"★": { "color": "#B00", "text-color": "#FFF", "bold": false, "border": "1px outset #000" },
+	"★★": { "color": "#F00", "text-color": "#FFF", "bold": false, "border": "1px outset #000" }
 }

@@ -3,7 +3,6 @@ Généralités :
 
 Frontend Tips :
 	• Éditer le titre d'un alias ne change pas la description de l'élément originel
-	• Les alias affichés sur le frontend ne sont pas update après renommage de l'item original
 	• Bouton "Éditer" : si actif, la description s'édite en double-cliquant dessus; si inactif, le menu doit être utilisé
 	• New link : paste "http://... description" -> automatically split and set the description field
 	                              ⬇︎
@@ -16,21 +15,17 @@ Make offline version :
 	squashfuse_ll links.sqsh [mountpoint] -o allow_other
 	# Run php-fpm and nginx with document root at the mountpoint
 
-Behaviors :
-	• When an item is moved, all tags associated with folders which will no longer contain the item are cleared
-	• La session PHP est créée (et le cookie déposé) uniquement lors de la soumission du formulaire de auth.php
-
 Todo :
+	• Bouton de gestion des tags : liste de tous les tags avec color-pickers, bold checkbox, del-button (ne supprime pas le tag des items), et lien vers page qui liste tous les items marqués par ce tag
 	• URL rewrite for index.php?path=... ($_CONF['urlrewrite'])
-	• Tag system
 	• Load aliased folder -> open at orig location if reachable through the same page + move focus ; open in new tab if not
 	• if (data[i]['type'] == 'error') -> error item, with error message as description
-	• Youtube DL
 	• Web save
 	• Web : die("item ".$_ID." requires manual removing")
 	• Cleaner frontend item position move
+	• Confirmation when deleting an item, optionnal
 
-Structure of the JSON file :
+Structure of an item JSON file :
 	- 'parent' : parent folder ID (`false` for root item)
 	- 'refby' : array of item ID that reference this item
 	- 'type' : type of the item : folder, yt, web, doc, hr, alias
@@ -67,8 +62,5 @@ Additional fields sent to frontend :
 	• alias :
 		- 'origdata' : data that would be sent to frontend for the original item
 
-Tags :
-	- tags.json -> array de { name, color, text-color, bold }
-	- Bouton de gestion des tags : liste de tous les tags avec color-pickers, bold checkbox, del-button (ne supprime pas le tag des items), et lien vers page qui liste tous les items marqués par ce tag (page normale en mode "tout dérouler" qui <del>n'affiche</del> _transfert_ (pour une futur fonction de search) que les items correspondants dans les dossiers)
-	- Popup de gestion de tag pour chaque item : un menu déroulant (focus auto) pour tapper le nom du tag (+ catch Enter key), et en plus une liste de tous les tags avec checkbox
-	- Tag pas dans la liste : affichage en italique
+Divers :
+	• La session PHP est créée (et le cookie déposé) uniquement lors de la soumission du formulaire de auth.php

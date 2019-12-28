@@ -327,7 +327,7 @@ function Metadata_EraseItem ($id) {
  */
 function Metadata_SetInfoKey ($id, $key, $value) {
 	__log__( "Setting info key '".$key."' of item id '".$id."' to '".$value."'…" );
-	if ($key == 'name' || $key == 'children' || $key == 'tags' || $key == 'orig') die();
+	if ($key == 'name' || $key == 'children' || $key == 'orig') die();
 	$data = Metadata_Get($id);
 	$data['item'][$key] = $value;
 	Metadata_Store($id, $data, true);
