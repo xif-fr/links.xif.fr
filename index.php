@@ -151,6 +151,7 @@ if ($_CONF['private-repository'])
 				<option value="copy">Copier</option> 
 				<option value="tags">Tags…</option> 
 				<option value="edit">Titre</option>
+				<option value="move">Déplacer</option>
 				<option value="rename">Renommer…</option>
 				<option value="toglpriv">Protection</option>
 				<option value="delete">Supprimer</option>
@@ -410,7 +411,19 @@ if ($_CONF['private-repository'])
 
 			/**************************** MOVE ITEM ****************************/
 
-			function MoveItem (li, e) {
+			function CommitItemPosition (li) {
+				for (var pos = 0, node = li; (node = node.previousElementSibling) != null; pos++);
+				$.get( "action.php", {
+					'action' : 'move',
+					'id' : li.id,
+					'pos' : pos,
+				}, function (data) {
+					if (data != "ok") 
+						alert(data);
+				});
+			}
+
+			function MoveItemMouse (li, e) {
 				li.style.position = 'relative';
 				var initY = e.pageY;
 				$(document).mousemove(function(e) {
@@ -440,15 +453,31 @@ if ($_CONF['private-repository'])
 				.mouseup(function() {
 					$(this).off('mousemove mouseup');
 					li.style.position = 'static';
-					for (var pos = 0, node = li; (node = node.previousElementSibling) != null; pos++);
-					$.get( "action.php", {
-						'action' : 'move',
-						'id' : li.id,
-						'pos' : pos,
-					}, function (data) {
-						if (data != "ok") 
-							alert(data);
-					});
+					CommitItemPosition(li);
+				});
+			}
+
+			function MoveItemKeys (li) {
+				$(li).addClass("moving");
+				$(document).keydown(function (e) {
+					if (e.keyCode == 38) {
+						e.preventDefault();
+						if (li.previousElementSibling == null) 
+							return;
+						else
+							li.parentElement.insertBefore(li, li.previousElementSibling);
+					}
+					if (e.keyCode == 40) {
+						e.preventDefault();
+						if (li.nextElementSibling == li.parentElement.getElementsByClassName("item-new")[0])
+							return;
+						else
+							li.parentElement.insertBefore(li, li.nextElementSibling.nextElementSibling);
+					}
+					if (e.keyCode == 13) {
+						$(li).removeClass("moving");
+						CommitItemPosition(li);
+					}
 				});
 			}
 
@@ -543,6 +572,9 @@ if ($_CONF['private-repository'])
 						}
 						else if (this.value == 'todo') {
 							AddTag(id, item, li, 'todo');
+						}
+						else if (this.value == 'move') {
+							MoveItemKeys(li);
 						}
 						this.value = 'nothing';
 					});

@@ -224,6 +224,13 @@ span.tag {
 	display: inline-block;
 }
 
+li.item.moving {
+	animation: blinker 1s linear infinite;
+}
+@keyframes blinker {
+	50% { opacity: 0; }
+}
+
 /*********************************** FORMS ***********************************/
 
 form {
