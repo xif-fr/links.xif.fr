@@ -48,7 +48,42 @@ if (isset($_GET['script'])) {
 		file_put_contents("ytdl_order.json", json_encode($output));
 		echo "ytdl.py order file for ".count($output)." items has been written to ./ytdl_order.json";
 		exit(0);
+	}
 
+	if ($_GET['script'] == 'ytdl_exec') {
+
+		header('Content-Type: text/plain');
+		set_time_limit(0);
+
+		$proc = popen("python -u ytdl.py 2>&1", 'r');
+		while (!feof($proc)) {
+			echo fread($proc, 4096);
+			@ flush();
+		}
+		pclose($proc);
+		exit(0);
+	}
+
+	if ($_GET['script'] == 'orphans') {
+
+		header('Content-Type: text/plain');
+
+		$files = scandir($_CONF['metadata-path']);
+		foreach ($files as $file) {
+			if (preg_match('/([a-f0-9]+)\.json/', $file, $matches)) {
+				$id = $matches[1];
+				if ($id == "00000000000000000000000000000000") 
+					continue;
+				$data = Metadata_Get($id);
+				if (!is_file( Metadata_JSONPath($data['parent']) )) {
+					echo $id." is orphaned :\n";
+					var_dump($data);
+					echo "-------------\n";
+				}
+			}
+		}
+
+		exit(0);
 	}
 
 }
@@ -66,6 +101,18 @@ if (isset($_GET['script'])) {
 			<form>
 				<input name="script" type="hidden" value="ytdl"/>
 				Order file for <code>ytdl.py</code> : <button type="submit">Generate</button>
+			</form>
+			<form>
+				<input name="script" type="hidden" value="ytdl_exec"/>
+				<button type="submit">Execute ytdl.py</button>
+			</form>
+		</fieldset>
+		<br/>
+		<fieldset>
+			<legend>Misc</legend>
+			<form>
+				<input name="script" type="hidden" value="orphans"/>
+				<button type="submit">List orphans</button>
 			</form>
 		</fieldset>
 	</body>
