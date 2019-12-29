@@ -532,7 +532,7 @@ if ($_CONF['private-repository'])
 					item_move.mousedown(function(e) {
 						if (e.which != 1 || disable_move) return;
 						var timer = setTimeout(function() {
-							MoveItem(li, e);
+							MoveItemMouse(li, e);
 							$(this).off('mouseup blur');
 						}, 200);
 						$(this).on('mouseup blur', function() {
