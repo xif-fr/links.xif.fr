@@ -504,11 +504,11 @@ if ($_CONF['private-repository'])
 					select.removeAttribute('id');
 					if (is_alias) 
 						$(select)
-							.find("[value=edit],[value=copy]")
+							.find("[value=edit],[value=copy],[value=rename]")
 								.remove();
 					if (item['name'] === undefined) 
 						$(select)
-							.find("[value=rename],[value=copy]")
+							.find("[value=rename]")
 								.remove();
 					li.appendChild(select);
 				}
@@ -884,6 +884,8 @@ if ($_CONF['private-repository'])
 			<script type="text/javascript">
 				batchm_cur_id = null;
 				batchm_dest_tree = null;
+				batchm_last_dest = null;
+				batchm_last_dest_id = null;
 				function BatchMoveDestReset () {
 					$("#batchm-dest").val("").focus();
 					batchm_dest_path = [];
@@ -893,6 +895,7 @@ if ($_CONF['private-repository'])
 					batchm_dest_curfold = null;
 					batchm_dest_last_comp = null;
 					batchm_dest_lastv = null;
+					batchm_hist_mode = false;
 					BatchMoveUpdateDest(true);
 				}
 
@@ -923,7 +926,10 @@ if ($_CONF['private-repository'])
 					$('#batchm-form').prop('hidden', true);
 					$('#batchm-item').empty();
 					$('#batchm-form input').val("");
+					$('#batchm-basepath').val("/");
 					batchm_cur_id = null;
+					batchm_dest_tree = null;
+					$('#batchm-dests').empty();
 					document.getElementById("batch-move-button").disabled = false;
 					document.getElementById("batchm-ok").disabled = true;
 					document.getElementById("batchm-basepath").disabled = false;
@@ -950,8 +956,10 @@ if ($_CONF['private-repository'])
 					});
 				}
 
-				function BatchMoveMove (dest_folder_id) {
-					console.log("Moving item "+batchm_cur_id+" to folder "+dest_folder_id)
+				function BatchMoveMove () {
+					console.log("Moving item "+batchm_cur_id+" to folder "+batchm_dest_id);
+					batchm_last_dest_id = batchm_dest_id;
+					batchm_last_dest = $("#batchm-dest").val();
 					$.ajax({
 						url: "action.php",
 						type: 'GET',
@@ -960,7 +968,7 @@ if ($_CONF['private-repository'])
 							'type' : 'paste',
 							'paste-type' : 'move',
 							'paste-id' : batchm_cur_id,
-							'folderid' : dest_folder_id
+							'folderid' : batchm_dest_id
 						},
 						dataType: 'json',
 						success: function (data) {
@@ -971,6 +979,7 @@ if ($_CONF['private-repository'])
 							alert(xhr.responseText);
 						}
 					});
+					BatchMoveDestReset();
 				}
 
 				function BatchMoveUpdateDest (force) {
@@ -1020,21 +1029,32 @@ if ($_CONF['private-repository'])
 							sel[ batchm_dest_suggest_i ].removeAttribute('selected');
 						}
 						if (evt.keyCode == 38) { // `ArrowUp` : Scroll up suggestions
-							if (batchm_dest_suggest_i != -1) {
-								batchm_dest_suggest_i--;
-								sel[ batchm_dest_suggest_i ].setAttribute('selected', null);
+							if (batchm_dest_suggest_i == -1) {
+								if (batchm_last_dest_id !== null) {
+									batchm_hist_mode = true;
+									$("#batchm-dest").val( batchm_last_dest );
+									batchm_dest_id = batchm_last_dest_id;
+								}
+							} else {
+								if (batchm_dest_suggest_i--)
+									sel[ batchm_dest_suggest_i ].setAttribute('selected', null);
 							}
 						}
 						else if (evt.keyCode == 40) { // `ArrowDown` : Scroll down suggestions
-							if (batchm_dest_suggest_i != sel.length-1)
-								batchm_dest_suggest_i++;
-							if (batchm_dest_suggest_i != -1)
-								sel[ batchm_dest_suggest_i ].setAttribute('selected', null);
+							if (batchm_hist_mode) {
+								batchm_hist_mode = false;
+								$("#batchm-dest").val("");
+								batchm_dest_id = null;
+							} else {
+								if (batchm_dest_suggest_i != sel.length-1)
+									batchm_dest_suggest_i++;
+								if (batchm_dest_suggest_i != -1)
+									sel[ batchm_dest_suggest_i ].setAttribute('selected', null);
+							}
 						}
 						else if (evt.keyCode == 13) { // `Enter`
 							if (evt.shiftKey) { // Perform move
-								BatchMoveMove(batchm_dest_id);
-								BatchMoveDestReset();
+								BatchMoveMove();
 							}
 							else { // Validate suggestion
 								if (batchm_dest_suggest_i != -1) {
@@ -1048,36 +1068,45 @@ if ($_CONF['private-repository'])
 							}
 						}
 						else if (evt.keyCode == 8) { // `Backspace` : Discard last component of the path (reset to batchm_dest_path_relstr)
-							if (batchm_dest_last_comp == "") 
-								batchm_dest_path.pop();
-							BatchMoveUpdateDest(true);
-							$("#batchm-dest").val( batchm_dest_path_relstr );
+							if (!batchm_hist_mode) {
+								if (batchm_dest_last_comp == "") 
+									batchm_dest_path.pop();
+								BatchMoveUpdateDest(true);
+								$("#batchm-dest").val( batchm_dest_path_relstr );
+							}
 						}
 						else if (evt.keyCode == 191) { // `/` : Validate last component (load new folder)
-							var found = false;
-							for (var i in batchm_dest_curfold['children']) {
-								if (batchm_dest_curfold['children'][i]['name'] == batchm_dest_last_comp) {
-									batchm_dest_path.push(i);
-									found = true;
+							if (!batchm_hist_mode) {
+								var found = false;
+								for (var i in batchm_dest_curfold['children']) {
+									if (batchm_dest_curfold['children'][i]['name'] == batchm_dest_last_comp) {
+										batchm_dest_path.push(i);
+										found = true;
+									}
 								}
+								if (found) return;
 							}
-							if (found) return;
 						} else return;
 						evt.preventDefault();
 					}).keyup(function () { // Update suggestions
 						if (batchm_dest_tree === null) 
 							return;
-						BatchMoveUpdateDest(false);
-						var sel = document.getElementById('batchm-dests').children;
-						if (sel.length == 1) {
-							batchm_dest_suggest_i = 0;
-							sel[0].setAttribute('selected', null);
+						if (!batchm_hist_mode) {
+							BatchMoveUpdateDest(false);
+							var sel = document.getElementById('batchm-dests').children;
+							if (sel.length == 1) {
+								batchm_dest_suggest_i = 0;
+								sel[0].setAttribute('selected', null);
+							}
 						}
 					});
 					$("#batchm-stop").click(BatchMoveStop);
-					$("#batchm-skip").click(BatchMoveNextItem);
 					$("#batchm-ok").click(BatchMoveMove);
 					$("#batchm-load").click(BatchMoveLoadTree);
+					$("#batchm-skip").click(function () {
+						BatchMoveDestReset();
+						BatchMoveNextItem();
+					});
 					$("#batchm-folder-go").click(function () {
 						window.open("?path="+$('#batchm-basepath').val()+batchm_dest_path_relstr, "_blank");
 					});
