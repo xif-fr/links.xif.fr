@@ -16,7 +16,10 @@ function null_error_handler ($errno, $errstr, $errfile, $errline) {
 if (preg_match("/^https?:\/\/(www.youtube.com\/watch\?v=|youtu.be\/)([a-zA-Z0-9_-]{11})/", $url, $_)) {
 	$json['type'] = 'yt';
 	$vid = $_[2];
-	parse_str(file_get_contents("https://www.youtube.com/get_video_info?video_id=".$vid), $_);
+	$data = @file_get_contents("https://www.youtube.com/get_video_info?video_id=".$vid);
+	if ($data === false)
+		die("Failed to retrieve www.youtube.com/get_video_info");
+	parse_str($data, $_);
 	$_ = json_decode($_['player_response'], true);
 	$_ = $_['videoDetails'];
 	if (!isset($_['title']) || !isset($_['author'])) 

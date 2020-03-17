@@ -2,7 +2,7 @@
 /*********************************** BODY/HEADER ***********************************/
 
 body {
-	font-family: Menlo, Monaco, monospace;
+	font-family: Fira Code, Menlo, Monaco, monospace;
 	background-color: #EEE;
 	margin: 0px;
 }
@@ -114,7 +114,7 @@ h2.taggroup {
 /*********************************** ITEMS ***********************************/
 
 li.item {
-	line-height: 16px;
+	line-height: 19px;
 	font-size: 0px;
 }
 li.item > p.descr,
@@ -165,7 +165,7 @@ li.item-hr > hr { width: 40%; display: inline-block; position: relative; bottom:
 li.item-hr > span { display: inline-block; height: 16px; }
 li.item > a.save { background-image: url(rsrc/saved-version.png); margin-right: 8px; display: none; }
 li.item-folder > .icon, li.item-folder > details > summary > .icon { background-image: url(rsrc/folder.png); }
-li.item-folder > p.descr, li.item-folder > details > summary > p.descr { font-weight: bold; }
+li.item-folder > p.descr, li.item-folder > details > summary > p.descr { /* font-weight: bold; */ }
 li.item-folder > a.folder-anchor, li.item-folder > details > summary > a.folder-anchor { background-image: url(rsrc/anchor.png); display: none; }
 li.item > select {
 	display: none;
@@ -202,9 +202,10 @@ li.item-folder > details > summary > span.folder-name {
 	font-size: 10px;
 	font-style: italic;
 	position: relative;
-	top: 2px;
+	top: 4px;
 	margin-left: 5px;
 	margin-right: 5px;
+	line-height: 10px;
 }
 li.item > .alias {
 	margin-left: -9px;
@@ -222,6 +223,7 @@ span.tag {
 	top: 1px;
 	vertical-align: middle;
 	display: inline-block;
+	line-height: 16px;
 }
 
 li.item.moving {

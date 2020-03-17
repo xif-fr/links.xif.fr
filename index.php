@@ -527,6 +527,8 @@ if ($_CONF['private-repository'])
 							disable_move = true;
 							EditDescription(this, id, function() { disable_move = false; });
 						});
+					$(li).find(".descr").html( $(li).find(".descr").html().replace(/\*\*(\S(.*?\S)?)\*\*/gm, '**<b>$1</b>**') );
+					$(li).find(".descr").html( $(li).find(".descr").html().replace(/\/\/(\S(.*?\S)?)\/\//gm, '//<i>$1</i>//') );
 				}
 				if (glob_modify) {
 					item_move.mousedown(function(e) {
@@ -543,6 +545,7 @@ if ($_CONF['private-repository'])
 				/*---------------- Item actions triggering ----------------*/
 				if (glob_modify) {
 					$(select).change(function () {
+						console.log("menu for "+id+" : "+this.value);
 						if (this.value == 'delete') {
 							DeleteItem(li, id);
 						}
@@ -780,6 +783,8 @@ if ($_CONF['private-repository'])
 			/**************************** DELETE ITEM ****************************/
 
 			function DeleteItem (li, id) {
+				if (confirm("Supprimer ?") == false)
+					return;
 				$.get( "action.php", {
 					'action' : 'delete',
 					'id' : id,
