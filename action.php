@@ -309,24 +309,43 @@ if ($_REQUEST['action'] == 'new') {
 		case 'doc' :
 			if (!isset($_REQUEST['name-doc']) || preg_match($regexp_name, $_REQUEST['name-doc']) === 0 || !isset($_REQUEST['descr-doc'])) 
 				die("invalid form");
-			if (isset($_REQUEST['url-doc']) && $_REQUEST['url-doc'] != "") {
-				if (preg_match($regexp_url, $_REQUEST['url-doc']) === 0) die("invalid form");
-				$url = $_REQUEST['url-doc'];
-			} else {
-				$url = null;
+			$url = null;
+			if (isset($_REQUEST['url-doc'])) {
+				if (!is_null($_CONF['altstor-path']) && strpos($_REQUEST['url-doc'], 'stor:') === 0) {
+					$stor_pathinfo = pathinfo(substr($_REQUEST['url-doc'], 5));
+					$stor_pathinfo['dirname'] = realpath($_CONF['altstor-path'].'/'.$stor_pathinfo['dirname']);
+					if (strpos($stor_pathinfo['dirname'], $_CONF['altstor-path']) !== 0)
+						die("new doc : can't go outside of the alt storage");
+					$stor_path = $stor_pathinfo['dirname'].'/'.$stor_pathinfo['basename'];
+					if (!is_file($stor_path))
+						die("new doc : alt storage file '".$stor_path."' does not exist");
+				}
+				else if ($_REQUEST['url-doc'] != "") {
+					if (preg_match($regexp_url, $_REQUEST['url-doc']) === 0)
+						die("invalid form");
+					$url = $_REQUEST['url-doc'];
+				}
 			}
-			$_ID = Metadata_CreateItemPreCB($_FOLDERID, 'doc', $_REQUEST['name-doc'], function ($newid, $newbasepath) use ($url, $_CONF) {
+			$_ID = Metadata_CreateItemPreCB($_FOLDERID, 'doc', $_REQUEST['name-doc'],
+				function ($newid, $newbasepath) use ($url, $_CONF, $stor_pathinfo, $stor_path) {
 				$_ITEM = [
 					'descr' => $_REQUEST['descr-doc'],
 					'ext' => null,
 					'url' => $url
 				];
-				if (isset($_FILES['file']) && $_FILES['file']['name'] != "") {
+				if (isset($stor_path)) {
+					$_ITEM['ext'] = $stor_pathinfo['extension'];
+					$filepath = $_CONF['files-path'].$newbasepath.".".$_ITEM['ext'];
+					$r = symlink($stor_path, $filepath);
+					if (!$r) 
+						die("new doc : failed to link file '".$stor_path."'");
+				}
+				else if (isset($_FILES['file']) && $_FILES['file']['name'] != "") {
 					$_ITEM['ext'] = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
 					$filepath = $_CONF['files-path'].$newbasepath.".".$_ITEM['ext'];
 					$r = move_uploaded_file($_FILES['file']['tmp_name'], $filepath);
 					if (!$r) 
-						die("failed to move uploaded file");
+						die("new doc : failed to move uploaded file");
 				} else {
 					if (is_null($url)) 
 						die("missing both file and url");
@@ -334,7 +353,7 @@ if ($_REQUEST['action'] == 'new') {
 					$filepath = $_CONF['files-path'].$newbasepath.".".$_ITEM['ext'];
 					$r = @copy($url, $filepath);
 					if (!$r) 
-						die("failed to download file");
+						die("new doc : failed to download file");
 				}
 				return $_ITEM;
 			});
