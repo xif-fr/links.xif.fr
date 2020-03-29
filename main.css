@@ -177,6 +177,18 @@ li.item > select {
 	position: relative;
 	top: 1px;
 }
+@-moz-document url-prefix() {
+	li.item > select {
+		display: inline-block;
+		opacity: 0%;
+		width: 0px;
+	}
+	li.item:hover > select {
+		opacity: 100%;
+		width: 16px;
+		margin-right: 5px;
+	}
+}
 li.item:hover > a.folder-anchor,
 li.item:hover > details > summary > a.folder-anchor,
 li.item:hover > select,
@@ -274,7 +286,7 @@ form > .buttons {
 }
 .inputline > span > span:nth-child(2) {
 	width: 100%;
-	padding: 0px 14px 0px 8px;
+	padding: 0px 14px 5px 8px;
 }
 .inputline > span > span:nth-child(2) > input {
 	width: 100%;

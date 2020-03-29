@@ -16,14 +16,11 @@ Make offline version :
 	# Run php-fpm and nginx with document root at the mountpoint
 
 Todo :
-	• Bouton de gestion des tags : liste de tous les tags avec color-pickers, bold checkbox, del-button (ne supprime pas le tag des items), et lien vers page qui liste tous les items marqués par ce tag
 	• URL rewrite for index.php?path=... ($_CONF['urlrewrite'])
 	• Load aliased folder -> open at orig location if reachable through the same page + move focus ; open in new tab if not
 	• if (data[i]['type'] == 'error') -> error item, with error message as description
 	• Web save
 	• Web : die("item ".$_ID." requires manual removing")
-	• Cleaner frontend item position move
-	• Confirmation when deleting an item, optionnal
 
 Structure of an item JSON file :
 	- 'parent' : parent folder ID (`false` for root item)
