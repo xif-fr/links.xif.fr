@@ -57,7 +57,7 @@ if (isset($_GET['script'])) {
 
 		$proc = popen("python -u ytdl.py 2>&1", 'r');
 		while (!feof($proc)) {
-			echo fread($proc, 4096);
+			echo fread($proc, 32);
 			@ flush();
 		}
 		pclose($proc);
@@ -86,6 +86,35 @@ if (isset($_GET['script'])) {
 		exit(0);
 	}
 
+	if ($_GET['script'] == 'savedweb') {
+
+		header('Content-Type: text/plain');
+
+		if (!isset($_REQUEST['id']) || preg_match("/^".$_CONF['idregexp']."$/", $_REQUEST['id']) === 0) 
+			die("invalid id");
+		$_ITEM = Metadata_Get($_REQUEST['id']);
+		if ($_ITEM['type'] != 'web') 
+			die("not web item");
+		if ($_ITEM['item']['saved'] !== false) 
+			die("already saved");
+
+		$stor_path = $_CONF['altstor-path'].'/'.$_REQUEST['pathname'];
+		if (!is_dir($stor_path))
+			die("'".$stor_path."' is not a dir or does not exist");
+		$stor_path = realpath($stor_path);
+		if (strpos($stor_path, $_CONF['altstor-path'].'/') !== 0)
+			die("can't go outside of the alt storage");
+
+		$dest_path = $_CONF['files-path'].Metadata_GetBasePath($_REQUEST['id']).".save";
+
+		symlink($stor_path, $dest_path);
+		echo "linked ".$stor_path." -> ".$dest_path;
+
+		Metadata_SetInfoKey($_REQUEST['id'], 'saved', true);
+
+		exit(0);
+	}
+
 }
 
 ?><!DOCTYPE html>
@@ -105,6 +134,16 @@ if (isset($_GET['script'])) {
 			<form>
 				<input name="script" type="hidden" value="ytdl_exec"/>
 				<button type="submit">Execute ytdl.py</button>
+			</form>
+		</fieldset>
+		<br/>
+		<fieldset>
+			<legend>Saved website</legend>
+			<form>
+				<input name="script" type="hidden" value="savedweb"/>
+				ID : <input name="id" type="text" placeholder="00000000000000000000000000000000"/><br/>
+				Path : <tt><?=$_CONF['altstor-path']?>/<input name="pathname" type="text"/></tt><br/>
+				<button type="submit">Do it</button>
 			</form>
 		</fieldset>
 		<br/>

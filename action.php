@@ -310,6 +310,8 @@ if ($_REQUEST['action'] == 'new') {
 			if (!isset($_REQUEST['name-doc']) || preg_match($regexp_name, $_REQUEST['name-doc']) === 0 || !isset($_REQUEST['descr-doc'])) 
 				die("invalid form");
 			$url = null;
+			$stor_pathinfo = null;
+			$stor_path = null;
 			if (isset($_REQUEST['url-doc'])) {
 				if (!is_null($_CONF['altstor-path']) && strpos($_REQUEST['url-doc'], 'stor:') === 0) {
 					$stor_pathinfo = pathinfo(substr($_REQUEST['url-doc'], 5));
@@ -333,7 +335,7 @@ if ($_REQUEST['action'] == 'new') {
 					'ext' => null,
 					'url' => $url
 				];
-				if (isset($stor_path)) {
+				if (!is_null($stor_path)) {
 					$_ITEM['ext'] = $stor_pathinfo['extension'];
 					$filepath = $_CONF['files-path'].$newbasepath.".".$_ITEM['ext'];
 					$r = symlink($stor_path, $filepath);
