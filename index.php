@@ -477,6 +477,7 @@ if ($_CONF['private-repository'])
 					if (e.keyCode == 13) {
 						$(li).removeClass("moving");
 						CommitItemPosition(li);
+						$(this).off(e);
 					}
 				});
 			}
@@ -1041,8 +1042,11 @@ if ($_CONF['private-repository'])
 									batchm_dest_id = batchm_last_dest_id;
 								}
 							} else {
-								if (batchm_dest_suggest_i--)
-									sel[ batchm_dest_suggest_i ].setAttribute('selected', null);
+								if (batchm_dest_suggest_i--) {
+									var elem = sel[ batchm_dest_suggest_i ];
+									elem.setAttribute('selected', null);
+									elem.parentNode.scrollTop = elem.offsetTop - elem.parentNode.offsetTop;
+								}
 							}
 						}
 						else if (evt.keyCode == 40) { // `ArrowDown` : Scroll down suggestions
@@ -1053,8 +1057,11 @@ if ($_CONF['private-repository'])
 							} else {
 								if (batchm_dest_suggest_i != sel.length-1)
 									batchm_dest_suggest_i++;
-								if (batchm_dest_suggest_i != -1)
-									sel[ batchm_dest_suggest_i ].setAttribute('selected', null);
+								if (batchm_dest_suggest_i != -1) {
+									var elem = sel[ batchm_dest_suggest_i ];
+									elem.setAttribute('selected', null);
+									elem.parentNode.scrollTop = elem.offsetTop - elem.parentNode.offsetTop;
+								}
 							}
 						}
 						else if (evt.keyCode == 13) { // `Enter`
