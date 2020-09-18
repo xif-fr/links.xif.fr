@@ -62,3 +62,4 @@ Additional fields sent to frontend :
 Divers :
 	• La session PHP est créée (et le cookie déposé) uniquement lors de la soumission du formulaire de auth.php
 	• L'ajout d'un document avec pour url "stor:mon_document.ext" va, au lieu de stocker un doc uploadé, crée un lien symbolique depuis un stockage alternatif où le document a déjà été uploadé sous le nom "mon_document.ext".
+	• L'ajout d'un document avec pour url "import:mon_document.ext" prend le document a déjà été uploadé sous le nom "mon_document.ext" dans le répertoire de stockage alternatif et le déplace

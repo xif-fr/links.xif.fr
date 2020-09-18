@@ -286,7 +286,7 @@ form > .buttons {
 }
 .inputline > span > span:nth-child(2) {
 	width: 100%;
-	padding: 0px 14px 5px 8px;
+	padding: 0px 30px 5px 8px;
 }
 .inputline > span > span:nth-child(2) > input {
 	width: 100%;

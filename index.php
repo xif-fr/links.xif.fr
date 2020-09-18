@@ -1124,7 +1124,7 @@ if ($_CONF['private-repository'])
 					});
 				});
 			</script>
-			<div class="inputline"><span> <span><label for="batchm-basepath">Base folder path :</label></span> <span><input type="text" id="batchm-basepath" value="/"/></span> <button type="button" id="batchm-load" style="width:80px">Load tree</button> </span></div>
+			<div class="inputline"><span> <span><label for="batchm-basepath">Base folder path :</label></span> <span><input type="text" id="batchm-basepath" value="/"/></span> <button type="button" id="batchm-load" style="width: max-content;">Load tree</button> </span></div>
 			<hr style="margin: 20px"/>
 			<div id="batchm-item"></div>
 			<hr style="margin: 20px"/>
