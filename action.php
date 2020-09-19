@@ -316,7 +316,8 @@ if ($_REQUEST['action'] == 'new') {
 				$stor_flag = strpos($_REQUEST['url-doc'], 'stor:') === 0;
 				$stor_flag_import = strpos($_REQUEST['url-doc'], 'import:') === 0;
 				if (!is_null($_CONF['altstor-path']) && ($stor_flag || $stor_flag_import)) {
-					$stor_pathinfo = pathinfo(substr($_REQUEST['url-doc'], 5));
+					$stor_pathinfo = pathinfo(substr($_REQUEST['url-doc'], $stor_flag_import?7:5));
+					$stor_pathinfo['do_move'] = $stor_flag_import;
 					$stor_pathinfo['dirname'] = realpath($_CONF['altstor-path'].'/'.$stor_pathinfo['dirname']);
 					if (strpos($stor_pathinfo['dirname'], $_CONF['altstor-path']) !== 0)
 						die("new doc : can't go outside of the alt storage");
@@ -340,7 +341,7 @@ if ($_REQUEST['action'] == 'new') {
 				if (!is_null($stor_path)) {
 					$_ITEM['ext'] = $stor_pathinfo['extension'];
 					$filepath = $_CONF['files-path'].$newbasepath.".".$_ITEM['ext'];
-					if ($stor_flag_import) {
+					if ($stor_pathinfo['do_move']) {
 						$r = rename($stor_path, $filepath);
 						if (!$r) 
 							die("new doc : failed to move file '".$stor_path."'");
