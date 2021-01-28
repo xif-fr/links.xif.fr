@@ -30,6 +30,11 @@ if (preg_match("/^https?:\/\/(www.youtube.com\/watch\?v=|youtu.be\/)([a-zA-Z0-9_
 
 	$json['type'] = 'web';
 	$dom = new DOMDocument();
+	$opts = array( 'http' => array(
+		'user_agent' => 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+	) );
+	$context = stream_context_create($opts);
+	libxml_set_streams_context($context);
 	set_error_handler('null_error_handler');
 	libxml_use_internal_errors(true);
 	$r = $dom->loadHTMLFile($url, LIBXML_NOWARNING);
