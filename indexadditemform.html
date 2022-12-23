@@ -1,0 +1,131 @@
+<form id="add-form" hidden>
+	<input type="hidden" name="action" value="new"/>
+	<input type="hidden" name="folderid" value=""/>
+	<div id="add-type-choice">
+		<input type="radio" name="type" id="type-folder" value="folder"/> <label for="type-folder">Dossier</label> <br/>
+		<input type="radio" name="type" id="type-doc" value="doc"/> <label for="type-doc">Document</label> <br/>
+		<input type="radio" name="type" id="type-web" value="web"/> <label for="type-web">Lien</label> <br/>
+		<input type="radio" name="type" id="type-yt" value="yt"/> <label for="type-yt">Vidéo Youtube</label> <br/>
+		<input type="radio" name="type" id="type-txt" value="txt"/> <label for="type-txt">Note texte</label> <br/>
+		<input type="radio" name="type" id="type-hr" value="hr"/> <label for="type-hr">Séparateur</label> <br/>
+		<input type="radio" name="type" id="type-paste" value="paste"/> <label for="type-paste">Élem. copié</label>
+	</div>
+	<script type="text/javascript">
+		function FormSetType (type, do_click) {
+			if (do_click !== false)
+				$("#add-form input#type-"+type).click();
+			$('#add-form fieldset')
+				.prop('hidden', true);
+			$('fieldset#add-form-'+type)
+				.prop('hidden', false)
+				.find('input:first')
+					.focus().click();
+		}
+		addnewitem_form_opened = false;
+		$(function () {
+			$('#add-form input[name=type]').click(function() {
+				var type = $('#add-form input[name=type]:checked').val();
+				FormSetType(type, false);
+			});
+			$('#add-form-cancel').click(function() {
+				$('#add-form')
+					.prop('hidden', true)
+					.unbind('submit')
+					.find("input[autoclear]")
+						.val("");
+				addnewitem_form_opened = false;
+			});
+			$('#add-descr-folder, #add-descr-doc, #add-descr-web, #add-descr-yt').on('keyup change', function() {
+				var descr = $(this).val();
+				descr = descr.replace(/[^a-zA-Z0-9\u00C0-\u02AF\u0391-\u03A9\u03B1-\u03C9]+/g,"-").replace(/(-+)$/,"").toLowerCase();
+				$(document.getElementById( this.id.replace("descr","name") )).val(descr);
+			});
+			$('#add-file').change(function() {
+				var filename = this.files[0].name.replace(/\.[^/.]+$/, "");
+				var descrfield = $('#add-descr-doc');
+				if (descrfield.val() != "") 
+					return; 
+				descrfield.val(filename);
+				filename = filename.replace(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
+				$("#add-name-doc").val(filename);
+			});
+			$('#add-link-web').on('keyup change', function() {
+				var raw = $(this).val();
+				var add_descr = $("#add-descr-web");
+				var r = /^(https?:\/\/[^ ]+)( (.+))?$/.exec(raw);
+				if (r != null) {
+					var DoEditDescr = function (is_yt, new_descr, new_url) {
+						if (is_yt) {
+							FormSetType('yt');
+							$("#add-link-yt").val(new_url);
+							$("#add-descr-yt").focus().val(new_descr);
+						} else {
+							if (add_descr.val() != "") 
+								return;
+							$('#add-link-web').val(new_url);
+							$("#add-descr-web").focus().val(new_descr);
+						}
+					}
+					if ((r[3] == "" || r[3] == undefined) && add_descr.val() == "") {
+						var rdoc = /\.(pdf|png|jpg|jpeg|gif|tiff|bmp|zip|tar|gz|xz|tgz|djvu|epub)$/.exec(r[1]);
+						if (rdoc != null) {
+							FormSetType('doc');
+							$("#add-link-doc").val(r[1]);
+						} else {
+							$.ajax({
+								url: "urltools.php",
+								type: 'POST',
+								data: { 'url': r[1] },
+								dataType: 'json',
+								success: function (data) {
+									DoEditDescr( (data['type']=='yt'), data['title'], r[1] );
+								},
+								error: function (xhr) {
+									alert(xhr.responseText);
+								}
+							});
+						}
+					} else {
+						DoEditDescr( (r[1].search("https://www.youtube.com") != -1), r[3], r[1] );
+					}
+				}
+			});
+		});
+	</script>
+	<fieldset id="add-form-folder" hidden>
+		<div class="inputline"><span> <span><label for="add-descr-folder">Titre :</label></span> <span><input type="text" id="add-descr-folder" name="descr-folder" autoclear/></span> </span></div>
+		<div class="inputline"><span> <span><label for="add-name-folder">Nom :</label></span> <span><input type="text" id="add-name-folder" name="name-folder" autoclear/></span> </span></div>
+	</fieldset>
+	<fieldset id="add-form-doc" hidden>
+		<div class="inputline"><span> <span><label for="add-link-doc">URL :</label></span> <span><input type="url" id="add-link-doc" name="url-doc" autoclear/></span> <span>et/ou <label for="add-file">fichier :</label> <input type="file" id="add-file" name="file" autoclear/></span> </span></div>
+		<div class="inputline"><span> <span><label for="add-descr-web">Description :</label></span> <span><input type="text" id="add-descr-doc" name="descr-doc" autoclear/></span> </span></div>
+		<div class="inputline"><span> <span><label for="add-name-doc">Nom :</label></span> <span><input type="text" id="add-name-doc" name="name-doc" autoclear/></span> </span></div>
+	</fieldset>
+	<fieldset id="add-form-web" hidden>
+		<div class="inputline"><span> <span><label for="add-link-web">URL :</label></span> <span><input type="url" id="add-link-web" name="url-web" autoclear/></span> </span></div>
+		<div class="inputline"><span> <span><label for="add-descr-web">Description :</label></span> <span><input type="text" id="add-descr-web" name="descr-web" autoclear/></span> </span></div>
+		<div class="inputline"><span> <span><label for="add-name-web">Nom :</label></span> <span><input type="text" id="add-name-web" name="name-web" autoclear/></span> </span></div>
+	</fieldset>
+	<fieldset id="add-form-yt" hidden>
+		<div class="inputline"><span> <span><label for="add-link-yt">URL :</label></span> <span><input type="url" id="add-link-yt" name="url-yt" autoclear/></span> </span></div>
+		<div class="inputline"><span> <span><label for="add-descr-yt">Description :</label></span> <span><input type="text" id="add-descr-yt" name="descr-yt" autoclear/></span> </span></div>
+		<div class="inputline"><span> <span><label for="add-name-yt">Nom :</label></span> <span><input type="text" id="add-name-yt" name="name-yt" autoclear/></span> </span></div>
+	</fieldset>
+	<fieldset id="add-form-txt" hidden>
+		<div class="inputline"><span> <span><label for="add-txt">Note :</label></span> <span><input type="text" id="add-txt" name="txt-note" autoclear/></span> </span></div>
+	</fieldset>
+	<fieldset id="add-form-hr" hidden>
+	</fieldset>
+	<fieldset id="add-form-paste" hidden>
+		<input type="radio" name="paste-type" id="paste-move" value="move"/> <label for="paste-move">Déplacer ici</label> <span class="spacer"></span>
+		<input type="radio" name="paste-type" id="paste-alias" value="alias"/> <label for="paste-alias">Alias</label> <br/>
+		<div class="inputline"><span> <span><label for="add-paste-id">ID de l'élément :</label></span> <span><input type="text" id="add-paste-id" name="paste-id" readonly autoclear/></span> </span></div>
+		<div class="inputline"><span> <span><label for="add-paste-descr">Titre :</label></span> <span><input type="text" id="add-paste-descr" readonly autoclear class="display-field"/></span> </span></div>
+	</fieldset>
+	<span class="buttons">
+		<span> <input type="checkbox" id="add-form-memory"/> <label for="add-form-memory">Répéter</label> &nbsp;</span>
+		<button type="button" id="add-form-cancel">Annuler</button>
+		<button type="submit" id="add-form-ok">Ajouter</button>
+	</span>
+	<progress id="add-progress" hidden></progress>
+</form>

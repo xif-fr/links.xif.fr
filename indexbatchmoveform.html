@@ -1,0 +1,251 @@
+<form id="batchm-form" hidden>
+	<script type="text/javascript">
+		batchm_cur_id = null;
+		batchm_dest_tree = null;
+		batchm_last_dest = null;
+		batchm_last_dest_id = null;
+		function BatchMoveDestReset () {
+			$("#batchm-dest").val("").focus();
+			batchm_dest_path = [];
+			batchm_dest_path_relstr = null;
+			batchm_dest_id = null;
+			batchm_dest_suggest_i = -1;
+			batchm_dest_curfold = null;
+			batchm_dest_last_comp = null;
+			batchm_dest_lastv = null;
+			batchm_hist_mode = false;
+			BatchMoveUpdateDest(true);
+		}
+
+		function BatchMoveNextItem () {
+			var next_item = null;
+			if (batchm_cur_id === null) {
+				var ul = document.getElementById(root_id).children[0];
+				if (ul.children.length === 0) {
+					BatchMoveStop(); return;
+				}
+				next_item = ul.children[0].cloneNode(true);
+			} else {
+				next_item = document.getElementById(batchm_cur_id).nextElementSibling;
+				if (next_item === null) {
+					BatchMoveStop(); return;
+				} else 
+					next_item = next_item.cloneNode(true);
+			}
+			if ($(next_item).hasClass('item-new')) {
+				BatchMoveStop(); return;
+			}
+			batchm_cur_id = next_item.id;
+			next_item.id = null;
+			$('#batchm-item').empty().append(next_item);
+		}
+
+		function BatchMoveStop () {
+			$('#batchm-form').prop('hidden', true);
+			$('#batchm-item').empty();
+			$('#batchm-form input').val("");
+			$('#batchm-basepath').val("/");
+			batchm_cur_id = null;
+			batchm_dest_tree = null;
+			$('#batchm-dests').empty();
+			document.getElementById("batch-move-button").disabled = false;
+			document.getElementById("batchm-ok").disabled = true;
+			document.getElementById("batchm-basepath").disabled = false;
+		}
+
+		function BatchMoveLoadTree () {
+			$.ajax({
+				url: "action.php",
+				type: 'GET',
+				data: {
+					'action' : 'tree',
+					'folderpath' : $('#batchm-basepath').val(),
+				},
+				dataType: 'json',
+				success: function (data) {
+					document.getElementById("batchm-ok").disabled = false;
+					document.getElementById("batchm-basepath").disabled = true;
+					batchm_dest_tree = data;
+					BatchMoveDestReset();
+				},
+				error: function (xhr) {
+					alert(xhr.responseText);
+				}
+			});
+		}
+
+		function BatchMoveMove () {
+			console.log("Moving item "+batchm_cur_id+" to folder "+batchm_dest_id);
+			batchm_last_dest_id = batchm_dest_id;
+			batchm_last_dest = $("#batchm-dest").val();
+			$.ajax({
+				url: "action.php",
+				type: 'GET',
+				data: {
+					'action' : 'new',
+					'type' : 'paste',
+					'paste-type' : 'move',
+					'paste-id' : batchm_cur_id,
+					'folderid' : batchm_dest_id
+				},
+				dataType: 'json',
+				success: function (data) {
+					BatchMoveNextItem();
+					$(document.getElementById(data['deletedid'])).remove();
+				},
+				error: function (xhr) {
+					alert(xhr.responseText);
+				}
+			});
+			BatchMoveDestReset();
+		}
+
+		function BatchMoveUpdateDest (force) {
+			var v = $("#batchm-dest").val();
+			if (batchm_dest_lastv === v && !force) return;
+			else batchm_dest_lastv = v;
+			var comp = v.split('/');
+			batchm_dest_last_comp = "";
+			batchm_dest_last_comp = comp[comp.length-1];
+			//-----//
+			batchm_dest_path_relstr = "";
+			var recTree = function (i, tree) {
+				if (batchm_dest_path.length == i) 
+					return tree;
+				else {
+					var child = tree['children'][ batchm_dest_path[i] ];
+					batchm_dest_path_relstr = batchm_dest_path_relstr + child['name'] + "/";
+					return recTree(i+1, child);
+				}
+			};
+			batchm_dest_curfold = recTree(0, batchm_dest_tree);
+			var path = $('#batchm-basepath').val() + batchm_dest_path_relstr;
+			//-----//
+			var destul = document.getElementById('batchm-dests');
+			$(destul).empty();
+			for (var i in batchm_dest_curfold['children']) {
+				var chnm = batchm_dest_curfold['children'][i]['name'];
+				if (chnm.toLowerCase().startsWith(batchm_dest_last_comp.toLowerCase())) {
+					var li = document.createElement('li');
+					li.setAttribute('name', chnm);
+					li.innerText = path + chnm;
+					destul.appendChild(li);
+				}
+			}
+			//-----//
+			batchm_dest_suggest_i = -1;
+			batchm_dest_id = batchm_dest_curfold['id'];
+			document.getElementById('batchm-dest-descr').innerText = batchm_dest_curfold['descr'];
+		}
+
+		$(function () {
+			$("#batchm-dest").keydown(function (evt) {
+				if (batchm_dest_tree === null) 
+					return;
+				var sel = document.getElementById('batchm-dests').children;
+				if (batchm_dest_suggest_i != -1) {
+					sel[ batchm_dest_suggest_i ].removeAttribute('selected');
+				}
+				if (evt.keyCode == 38) { // `ArrowUp` : Scroll up suggestions
+					if (batchm_dest_suggest_i == -1) {
+						if (batchm_last_dest_id !== null) {
+							batchm_hist_mode = true;
+							$("#batchm-dest").val( batchm_last_dest );
+							batchm_dest_id = batchm_last_dest_id;
+						}
+					} else {
+						if (batchm_dest_suggest_i--) {
+							var elem = sel[ batchm_dest_suggest_i ];
+							elem.setAttribute('selected', null);
+							elem.parentNode.scrollTop = elem.offsetTop - elem.parentNode.offsetTop;
+						}
+					}
+				}
+				else if (evt.keyCode == 40) { // `ArrowDown` : Scroll down suggestions
+					if (batchm_hist_mode) {
+						batchm_hist_mode = false;
+						$("#batchm-dest").val("");
+						batchm_dest_id = null;
+					} else {
+						if (batchm_dest_suggest_i != sel.length-1)
+							batchm_dest_suggest_i++;
+						if (batchm_dest_suggest_i != -1) {
+							var elem = sel[ batchm_dest_suggest_i ];
+							elem.setAttribute('selected', null);
+							elem.parentNode.scrollTop = elem.offsetTop - elem.parentNode.offsetTop;
+						}
+					}
+				}
+				else if (evt.keyCode == 13) { // `Enter`
+					if (evt.shiftKey) { // Perform move
+						BatchMoveMove();
+					}
+					else { // Validate suggestion
+						if (batchm_dest_suggest_i != -1) {
+							var suggestion = sel[ batchm_dest_suggest_i ].getAttribute('name');
+							for (var i in batchm_dest_curfold['children']) 
+								if (batchm_dest_curfold['children'][i]['name'] == suggestion) 
+									batchm_dest_path.push(i);
+							BatchMoveUpdateDest(true);
+							$("#batchm-dest").val( batchm_dest_path_relstr );
+						}
+					}
+				}
+				else if (evt.keyCode == 8) { // `Backspace` : Discard last component of the path (reset to batchm_dest_path_relstr)
+					if (!batchm_hist_mode) {
+						if (batchm_dest_last_comp == "") 
+							batchm_dest_path.pop();
+						BatchMoveUpdateDest(true);
+						$("#batchm-dest").val( batchm_dest_path_relstr );
+					}
+				}
+				else if (evt.keyCode == 191) { // `/` : Validate last component (load new folder)
+					if (!batchm_hist_mode) {
+						var found = false;
+						for (var i in batchm_dest_curfold['children']) {
+							if (batchm_dest_curfold['children'][i]['name'] == batchm_dest_last_comp) {
+								batchm_dest_path.push(i);
+								found = true;
+							}
+						}
+						if (found) return;
+					}
+				} else return;
+				evt.preventDefault();
+			}).keyup(function () { // Update suggestions
+				if (batchm_dest_tree === null) 
+					return;
+				if (!batchm_hist_mode) {
+					BatchMoveUpdateDest(false);
+					var sel = document.getElementById('batchm-dests').children;
+					if (sel.length == 1) {
+						batchm_dest_suggest_i = 0;
+						sel[0].setAttribute('selected', null);
+					}
+				}
+			});
+			$("#batchm-stop").click(BatchMoveStop);
+			$("#batchm-ok").click(BatchMoveMove);
+			$("#batchm-load").click(BatchMoveLoadTree);
+			$("#batchm-skip").click(function () {
+				BatchMoveDestReset();
+				BatchMoveNextItem();
+			});
+			$("#batchm-folder-go").click(function () {
+				window.open("?path="+$('#batchm-basepath').val()+batchm_dest_path_relstr, "_blank");
+			});
+		});
+	</script>
+	<div class="inputline"><span> <span><label for="batchm-basepath">Base folder path :</label></span> <span><input type="text" id="batchm-basepath" value="/"/></span> <button type="button" id="batchm-load" style="width: max-content;">Load tree</button> </span></div>
+	<hr style="margin: 20px"/>
+	<div id="batchm-item"></div>
+	<hr style="margin: 20px"/>
+	<div class="inputline"><span> <span><label for="batchm-dest">Rel. destination :</label></span> <span><input type="text" id="batchm-dest"/></span> <button type="button" id="batchm-folder-go"></button> </span></div>
+	<div id="batchm-dest-descr"></div>
+	<ul id="batchm-dests"></ul>
+	<span class="buttons">
+		<button type="button" id="batchm-stop">Stop</button>
+		<button type="button" id="batchm-skip">Skip</button>
+		<button type="button" id="batchm-ok" disabled>Move</button>
+	</span>
+</form>
