@@ -25,7 +25,7 @@
 		$(window).on("beforeunload", function(e) {
 			disable_ajax_error = true;
 		});
-		activateEdit = true;
+		glob_activateTitleEdit = true;
 		$(function () {
 			var val = (getCookie("showlinks") !== "false");
 			$("#option-links")
@@ -35,12 +35,12 @@
 				setCookie("showlinks", this.checked);
 				$("body").attr('showlinks', this.checked);
 			});
-			activateEdit = (getCookie("activateEdit") !== "false");
+			glob_activateTitleEdit = (getCookie("activateEdit") !== "false");
 			$("#option-edit")
-				.prop('checked', activateEdit);
+				.prop('checked', glob_activateTitleEdit);
 			$("#option-edit").click(function () {
 				setCookie("activateEdit", this.checked);
-				activateEdit = this.checked;
+				glob_activateTitleEdit = this.checked;
 			});
 			$("#main-tag-button").click(function () {
 				//////////////////////////////////////////////////////////////////////////////

@@ -37,23 +37,8 @@ if (!isset($_TAGS[$_GET['tag']]))
 
 		<script type="text/javascript">
 			glob_modify = <?=(($_PUBLICEDIT||$_AUTHED)?'true':'false')?>;
-			glob_toload = null;
 			$(function () {
-				function LoadTagGroup (tagrootid, tagname) {
-					var container = document.getElementById(tagrootid);
-					LoadItemsGroup( "action.php?action=filterlist&folderid=<?=$_CONF['rootid']?>&rec=1&type=tag&tag="+tagname, container, function (data) {
-						var i = data.length, temp, randi;
-						while (0 !== i) {
-							randi = Math.floor(Math.random() * i); i -= 1;
-							temp = data[i]; data[i] = data[randi]; data[randi] = temp;
-						}
-					}, function () {
-						var tagroot = $(document.getElementById(tagrootid));
-						tagroot.find("li > .tag").remove();
-						tagroot.find("li > select > option").filter('[value="todo"],[value="copy"],[value="rename"],[value="delete"]').remove();
-					} );
-				}
-				LoadTagGroup("tagroot", "<?=$_GET['tag']?>");
+				LoadTagGroup("tagroot", "<?=$_CONF['rootid']?>", "<?=$_GET['tag']?>", false, glob_modify);
 			});
 		</script>
 	</body>

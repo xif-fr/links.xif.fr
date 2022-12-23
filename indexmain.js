@@ -1,3 +1,5 @@
+glob_toload = null;
+
 /**************************** MOVE ITEM ****************************/
 
 function CommitItemPosition (li) {
@@ -73,7 +75,7 @@ function MoveItemKeys (li) {
 
 /**************************** INSERT A RECEIVED ITEM IN THE TREE ****************************/
 
-function PrepareItem (item) {
+function PrepareItem (item, modifiable, movable) {
 	/*---------------- Preparation ----------------*/
 	var is_alias = (item['type'] == 'alias');
 	var id = item['id'];
@@ -89,30 +91,28 @@ function PrepareItem (item) {
 	if (item['public']) 
 		$(li).find("span.lock").remove();
 	/*---------------- Create action menu ----------------*/
-	if (glob_modify) {
-		var select = document.getElementById('tpl-action-select').cloneNode(true);
-		select.removeAttribute('id');
-		if (is_alias) 
-			$(select)
-				.find("[value=edit],[value=copy],[value=rename]")
-					.remove();
-		if (item['name'] === undefined) 
-			$(select)
-				.find("[value=rename]")
-					.remove();
-		li.appendChild(select);
-	}
+	var select = document.getElementById('tpl-action-select').cloneNode(true);
+	select.removeAttribute('id');
+	if (!modifiable)
+		$(select).find(".modifiable").remove();
+	if (!movable)
+		$(select).find(".movable").remove();
+	if (is_alias) 
+		$(select).find(".notalias").remove();
+	if (item['name'] === undefined) 
+		$(select).find(".hasname").remove();
+	li.appendChild(select);
 	/*---------------- Item moving and description editing triggers ----------------*/
 	var disable_move = false;
-	var item_move;
+	var item_mousedown;
 	if (item['type'] == 'hr') 
-		item_move = $(li).find("hr");
+		item_mousedown = $(li).find("hr");
 	else {
-		item_move =
+		item_mousedown =
 		$(li).find(".descr")
 			.text( item['descr'] )
 			.dblclick(function() {
-				if (!activateEdit || !glob_modify) 
+				if (!glob_activateTitleEdit || !modifiable) 
 					return;
 				disable_move = true;
 				EditDescription(this, id, function() { disable_move = false; });
@@ -120,8 +120,8 @@ function PrepareItem (item) {
 		$(li).find(".descr").html( $(li).find(".descr").html().replace(/\*\*(\S(.*?\S)?)\*\*/gm, '**<b>$1</b>**') );
 		$(li).find(".descr").html( $(li).find(".descr").html().replace(/\/\/(\S(.*?\S)?)\/\//gm, '//<i>$1</i>//') );
 	}
-	if (glob_modify) {
-		item_move.mousedown(function(e) {
+	if (movable) {
+		item_mousedown.mousedown(function(e) {
 			if (e.which != 1 || disable_move) return;
 			var timer = setTimeout(function() {
 				MoveItemMouse(li, e);
@@ -133,45 +133,43 @@ function PrepareItem (item) {
 		});
 	}
 	/*---------------- Item actions triggering ----------------*/
-	if (glob_modify) {
-		$(select).change(function () {
-			console.log("menu for "+id+" : "+this.value);
-			if (this.value == 'delete') {
-				DeleteItem(li, id);
-			}
-			else if (this.value == 'copy') {
-				$("input#add-paste-id")
-					.val(id);
-				$("input#add-paste-descr")
-					.val(item['descr']);
-			}
-			else if (this.value == 'edit') {
-				if (is_alias) return;
-				disable_move = true;
-				EditDescription(li.getElementsByClassName('descr')[0], id, function() { disable_move = false; });
-			}
-			else if (this.value == 'rename') {
-				if (item['name'] === undefined) return;
-				RenameItem(id, item, li);
-			}
-			else if (this.value == 'toglpriv') {
-				ToggleItemProtection(id, li);
-			}
-			else if (this.value == 'info') {
-				alert(JSON.stringify(item, undefined, "   "));
-			}
-			else if (this.value == 'tags') {
-				EditTags(id, item, li);
-			}
-			else if (this.value == 'todo') {
-				AddTag(id, item, li, 'todo');
-			}
-			else if (this.value == 'move') {
-				MoveItemKeys(li);
-			}
-			this.value = 'nothing';
-		});
-	}
+	$(select).change(function () {
+		console.log("menu for "+id+" : "+this.value);
+		if (this.value == 'delete') {
+			DeleteItem(li, id);
+		}
+		else if (this.value == 'copy') {
+			$("input#add-paste-id")
+				.val(id);
+			$("input#add-paste-descr")
+				.val(item['descr']);
+		}
+		else if (this.value == 'edit') {
+			if (is_alias) return;
+			disable_move = true;
+			EditDescription(li.getElementsByClassName('descr')[0], id, function() { disable_move = false; });
+		}
+		else if (this.value == 'rename') {
+			if (item['name'] === undefined) return;
+			RenameItem(id, item, li);
+		}
+		else if (this.value == 'toglpriv') {
+			ToggleItemProtection(id, li);
+		}
+		else if (this.value == 'info') {
+			alert(JSON.stringify(item, undefined, "   "));
+		}
+		else if (this.value == 'tags') {
+			EditTags(id, item, li);
+		}
+		else if (this.value == 'todo') {
+			AddTag(id, item, li, 'todo');
+		}
+		else if (this.value == 'move') {
+			MoveItemKeys(li);
+		}
+		this.value = 'nothing';
+	});
 	/*---------------- Type-specific treatment ----------------*/
 	switch (item['type']) {
 		case 'folder':
@@ -262,7 +260,7 @@ function PrepareItem (item) {
 
 /**************************** LOAD FOLDER ****************************/
 
-function LoadItemsGroup (actionURL, container, preaction, postaction) {
+function LoadItemsGroup (actionURL, container, preaction, postaction, itemsmodifiable, itemsmovable) {
 	var loading = document.createElement('progress');
 	container.appendChild(loading);
 	$.getJSON( actionURL, function (data) {
@@ -272,7 +270,7 @@ function LoadItemsGroup (actionURL, container, preaction, postaction) {
 		for (var i = 0; i < data.length; i++) {
 			if (data[i] === null) 
 				continue;
-			var li = PrepareItem(data[i]);
+			var li = PrepareItem(data[i], itemsmodifiable, itemsmovable);
 			ul.appendChild(li);
 		}
 		container.appendChild(ul);
@@ -283,30 +281,39 @@ function LoadItemsGroup (actionURL, container, preaction, postaction) {
 	});
 }
 
-function LoadFolder (folderid) {
+function LoadFolder (folderid, modifiable) {
 	var folder = document.getElementById(folderid);
-	LoadItemsGroup( "action.php?action=list&folderid="+folderid, folder, function () {}, function (container, ul) {
-		if (glob_modify) {
-			var li_new = document.getElementById('tpl-new').cloneNode(true);
-			li_new.id = null;
-			$(li_new).click(function() {
-				AddNewItem(folderid, li_new);
-			});
-			ul.appendChild(li_new);
-		}
-		while (glob_toload !== null && glob_toload.length != 0) 
-			glob_toload.shift().click();
-	});
+	LoadItemsGroup(
+		"action.php?action=list&folderid="+folderid,
+		folder,
+		function () {},
+		function (container, ul) {
+			if (modifiable) {
+				var li_new = document.getElementById('tpl-new').cloneNode(true);
+				li_new.id = null;
+				$(li_new).click(function() {
+					AddNewItem(folderid, li_new, modifiable, modifiable);
+				});
+				ul.appendChild(li_new);
+			}
+			while (glob_toload !== null && glob_toload.length != 0) 
+				glob_toload.shift().click();
+		},
+		modifiable,
+		modifiable
+	);
 }
 
 /**************************** RELOAD ITEM ****************************/
 
 function ReloadItem (id, li) {
+	modifiable = document.body.classList.contains('modifiable');
+	movable = document.body.classList.contains('movable');
 	$(li).empty().append( 
 		document.createElement('progress')
 	);
 	$.getJSON( "action.php?action=getitem&id="+id, function (data) {
-		var newli = PrepareItem(data);
+		var newli = PrepareItem(data, modifiable, movable);
 		li.parentElement.replaceChild(newli, li);
 	}).fail(function(xhr) {
 		if (!disable_ajax_error)
@@ -343,7 +350,7 @@ function AddNewItem (folderid, li_new) {
 				if (data['deletedid'] !== undefined) 
 					$(document.getElementById( data['deletedid'] ))
 						.remove();
-				var li = PrepareItem(data);
+				var li = PrepareItem(data, true, true);
 				li_new.parentElement.insertBefore(li, li_new);
 				var type = $('#add-form input[name=type]:checked').val();
 				$("#add-form")
@@ -469,4 +476,29 @@ function ToggleItemProtection (id, li) {
 			alert(data);
 		ReloadItem(id, li);
 	});
+}
+
+/**************************** UTIL FUNCTION TO LOAD A TAG GROUP ****************************/
+
+function LoadTagGroup (tagrootid, infolderid, tagname, removetags, modifiable) {
+	var container = document.getElementById(tagrootid);
+	LoadItemsGroup(
+		"action.php?action=filterlist&folderid="+infolderid+"&rec=1&type=tag&tag="+tagname,
+		container,
+		function (data) {
+			var i = data.length, temp, randi;
+			while (0 !== i) {
+				randi = Math.floor(Math.random() * i); i -= 1;
+				temp = data[i]; data[i] = data[randi]; data[randi] = temp;
+			}
+		},
+		function () {
+			var tagroot = $(document.getElementById(tagrootid));
+			if (removetags)
+				tagroot.find("li > .tag").remove();
+			tagroot.find("li > select > option").filter('[value="move"],[value="copy"],[value="rename"],[value="delete"]').remove();
+		},
+		modifiable,
+		false
+	);
 }

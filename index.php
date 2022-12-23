@@ -107,22 +107,8 @@ include "indexauthedcheck.php";
 		<div class="root" id="toolsroot"></div>
 		<script type="text/javascript">
 			$(function () {
-				function LoadTagGroup (tagrootid, tagname) {
-					var container = document.getElementById(tagrootid);
-					LoadItemsGroup( "action.php?action=filterlist&folderid=<?=$_CONF['rootid']?>&rec=1&type=tag&tag="+tagname, container, function (data) {
-						var i = data.length, temp, randi;
-						while (0 !== i) {
-							randi = Math.floor(Math.random() * i); i -= 1;
-							temp = data[i]; data[i] = data[randi]; data[randi] = temp;
-						}
-					}, function () {
-						var tagroot = $(document.getElementById(tagrootid));
-						tagroot.find("li > .tag").remove();
-						tagroot.find("li > select > option").filter('[value="todo"],[value="copy"],[value="rename"],[value="delete"]').remove();
-					} );
-				}
-				LoadTagGroup("toolsroot", "tool");
-				LoadTagGroup("atraiterroot", "à traiter");
+				LoadTagGroup("toolsroot", "<?=$_CONF['rootid']?>", "tool", false, false);
+				LoadTagGroup("atraiterroot", "<?=$_CONF['rootid']?>", "à traiter", false, false);
 			});
 		</script>
 		<?php } ?>
