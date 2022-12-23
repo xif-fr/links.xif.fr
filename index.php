@@ -35,8 +35,10 @@ include "indexauthedcheck.php";
 		<meta charset="utf-8">
 		<title><?=htmlspecialchars($_TITLE)?></title>
 		<link rel="stylesheet" href="main.css" type="text/css">
-		<script type="text/javascript" src="https://code.jquery.com/jquery-git.min.js" crossorigin="anonymous"></script>
+<!--	<script type="text/javascript" src="https://code.jquery.com/jquery-git.min.js" crossorigin="anonymous"></script>
 		<script>window.jQuery || document.write('<script src="rsrc/jquery-3.3.1.min.js">\x3C/script>')</script>
+-->
+		<script type="text/javascript" src="rsrc/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
 	</head>
 	<body>
 

@@ -18,7 +18,7 @@ if (!isset($_TAGS[$_GET['tag']]))
 		<meta charset="utf-8">
 		<title><?=$_CONF['titlebase']?> : Filter by tag</title>
 		<link rel="stylesheet" href="main.css" type="text/css">
-		<script type="text/javascript" src="https://code.jquery.com/jquery-git.min.js" crossorigin="anonymous"></script>
+		<script type="text/javascript" src="rsrc/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
 	</head>
 	<body showlinks="true">
 		<header>
