@@ -292,7 +292,7 @@ function LoadFolder (folderid, modifiable) {
 				var li_new = document.getElementById('tpl-new').cloneNode(true);
 				li_new.id = null;
 				$(li_new).click(function() {
-					AddNewItem(folderid, li_new, modifiable, modifiable);
+					AddNewItem(folderid, li_new);
 				});
 				ul.appendChild(li_new);
 			}
@@ -496,7 +496,6 @@ function LoadTagGroup (tagrootid, infolderid, tagname, removetags, modifiable) {
 			var tagroot = $(document.getElementById(tagrootid));
 			if (removetags)
 				tagroot.find("li > .tag").remove();
-			tagroot.find("li > select > option").filter('[value="move"],[value="copy"],[value="rename"],[value="delete"]').remove();
 		},
 		modifiable,
 		false

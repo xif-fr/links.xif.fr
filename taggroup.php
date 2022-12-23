@@ -12,6 +12,8 @@ $_TAGS = json_decode(file_get_contents("tags.json"), true);
 if (!isset($_TAGS[$_GET['tag']])) 
 	die("tag '".$tag."' is not registered");
 
+$_ID = $_CONF['rootid'];
+
 ?><!DOCTYPE html>
 <html>
 	<head lang="fr">

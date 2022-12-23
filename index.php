@@ -72,9 +72,9 @@ include "indexauthedcheck.php";
 					glob_toload = [];
 					$(this).remove();
 					$(document.getElementById(root_id)).empty();
-					LoadFolder(root_id);
+					LoadFolder(root_id, glob_modify);
 				});
-				LoadFolder(root_id);
+				LoadFolder(root_id, glob_modify);
 			});
 		</script>
 		<div class="root" id="<?=$_ID?>">
@@ -107,8 +107,8 @@ include "indexauthedcheck.php";
 		<div class="root" id="toolsroot"></div>
 		<script type="text/javascript">
 			$(function () {
-				LoadTagGroup("toolsroot", "<?=$_CONF['rootid']?>", "tool", false, false);
-				LoadTagGroup("atraiterroot", "<?=$_CONF['rootid']?>", "à traiter", false, false);
+				LoadTagGroup("toolsroot", "<?=$_CONF['rootid']?>", "tool", true, false);
+				LoadTagGroup("atraiterroot", "<?=$_CONF['rootid']?>", "à traiter", true, false);
 			});
 		</script>
 		<?php } ?>
