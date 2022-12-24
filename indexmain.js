@@ -90,6 +90,7 @@ function PrepareItem (item, modifiable, movable) {
 		$(li).find("img.alias").remove();
 	if (item['public']) 
 		$(li).find("span.lock").remove();
+
 	/*---------------- Create action menu ----------------*/
 	var select = document.getElementById('tpl-action-select').cloneNode(true);
 	select.removeAttribute('id');
@@ -102,6 +103,10 @@ function PrepareItem (item, modifiable, movable) {
 	if (item['name'] === undefined) 
 		$(select).find(".hasname").remove();
 	li.appendChild(select);
+	if (modifiable)
+		li.classList.add('modifiable')
+	if (movable)
+		li.classList.add('movable')
 	/*---------------- Item moving and description editing triggers ----------------*/
 	var disable_move = false;
 	var item_mousedown;
@@ -307,8 +312,8 @@ function LoadFolder (folderid, modifiable) {
 /**************************** RELOAD ITEM ****************************/
 
 function ReloadItem (id, li) {
-	modifiable = document.body.classList.contains('modifiable');
-	movable = document.body.classList.contains('movable');
+	modifiable = li.classList.contains('modifiable');
+	movable = li.classList.contains('movable');
 	$(li).empty().append( 
 		document.createElement('progress')
 	);
