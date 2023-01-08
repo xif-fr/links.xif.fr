@@ -190,7 +190,7 @@ function PrepareItem (item, modifiable, movable) {
 							if (opened) 
 								li.removeChild(li.getElementsByTagName('ul')[0]);
 							else 
-								LoadFolder(id);
+								LoadFolder(id, modifiable);
 							return !opened;
 						});
 					});
