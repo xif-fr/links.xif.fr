@@ -14,36 +14,42 @@ function CommitItemPosition (li) {
 	});
 }
 
+
 function MoveItemMouse (li, e) {
 	li.style.position = 'relative';
+	document.body.classList.add('noselect');
+
 	var initY = e.pageY;
+
 	$(document).mousemove(function(e) {
 		var dy = e.pageY-initY;
+
 		if (li.previousElementSibling == null) {
-			if (dy < 0) 
-				return;
+			if (dy < 0) return;
 		} else {
 			var h2 = li.previousElementSibling.offsetHeight/2.;
 			if (dy < -h2) {
 				li.parentElement.insertBefore(li, li.previousElementSibling);
-				initY = e.pageY-h2;
+				initY = e.pageY - h2;
 			}
 		}
+
 		if (li.nextElementSibling == li.parentElement.getElementsByClassName("item-new")[0]) {
-			if (dy > 0) 
-				return;
+			if (dy > 0) return;
 		} else {
 			var h2 = li.nextElementSibling.offsetHeight/2.;
 			if (dy > h2) {
 				li.parentElement.insertBefore(li, li.nextElementSibling.nextElementSibling);
-				initY = e.pageY+h2;
+				initY = e.pageY + h2;
 			}
 		}
+
 		li.style.top = ''+dy+'px';
 	})
 	.mouseup(function() {
 		$(this).off('mousemove mouseup');
 		li.style.position = 'static';
+		document.body.classList.remove('noselect'); // ← ici aussi
 		CommitItemPosition(li);
 	});
 }
